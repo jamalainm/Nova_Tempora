@@ -25,14 +25,16 @@ from evennia import utils
 
 CONNECTION_SCREEN = """
 |b==============================================================|n
- Welcome to |g{}|n, version {}!
+ Tē accipimus in LŪTUM cuius nōmen est: 
+ |g{}|n, versiō {}!
 
- If you have an existing account, connect to it by typing:
-      |wconnect <username> <password>|n
- If you need to create an account, type (without the <>'s):
-      |wcreate <username> <password>|n
+ Sī iam est tibi ratiō, ad illam tē iunge scrībendō:
+      |wconnect <nōmen> <tesseram>|n
+ Sī nondum est tibi ratiō, scrībe (sine <>):
+      |wcreate <nōmen> <tesseram>|n
 
- Enter |whelp|n for more info. |wlook|n will re-show this screen.
+ Scrībe |whelp|n ut certior faciēris. 
+ |wlook|n tibi hunc nuntium ostendet.
 |b==============================================================|n""".format(
     settings.SERVERNAME, utils.get_evennia_version("short")
 )

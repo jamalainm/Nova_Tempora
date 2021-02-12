@@ -36,6 +36,7 @@ SERVERNAME = "Ō Tempora, Ō Mōrēs!"
 
 USE_I18N = True
 LANGUAGE_CODE= "la"
+INSTALLED_APPS += ('web.chargen',)
 
 ######################################################################
 # Settings given in secret_settings.py override those in this file.

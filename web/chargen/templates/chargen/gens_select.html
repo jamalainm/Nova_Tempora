@@ -1,0 +1,36 @@
+<!-- file mygame/web/chargen/templates/chargen/gens_select.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1> Ad Persōnam Creandam </h1>
+
+{% if user.is_autenticated %}
+
+<p> Tū es {{ sexus }} </p>
+
+<form action="{% url 'chargen:creating' %}"  method="post">
+
+	<h2> Quae gens est tibi? </h2>
+
+	{% csrf_token %}
+
+	<input type="hidden" name="sexus" value="{{ sexus }}">
+
+	{% for g in gentes %}
+
+	<label class="radio-inline" for="{{ g }}">
+	<input type="radio" id="{{ g }}" name="gens" value="{{ g }}" required>
+	{{ g }}</label>
+	{% endfor %}
+
+	<input type="submit" value="Mitte">
+
+</form>
+
+{% else %}
+<p> You aren't logged in. </p>
+{% endif %}
+
+{% endblock %}

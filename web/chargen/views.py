@@ -26,11 +26,17 @@ def detail(request, app_id):
     sexus = app.sexus
     gens = app.gens
     praenomen = app.praenomen
+    if sexus == 'mās':
+        nōmen = gens[:-1] + 'us'
+    else:
+        nōmen = gens
     p_id = request.user.id
+    submitted = app.submitted
     context = {
             'sexus': sexus,
             'gens': gens,
-            'praenomen': praenomen,
+            'praenōmen': praenomen,
+            'nōmen': nōmen,
             'p_id': p_id,
             'submitted': submitted,
             }

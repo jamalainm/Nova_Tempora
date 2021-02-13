@@ -1,0 +1,38 @@
+<!-- file mygame/web/chargen/templates/chargen/praenomen_select.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1> Ad Persōnam Creandam </h1>
+
+{% if user.is_autenticated %}
+
+<p> Sexus tibi est {{ sexus }} </p>
+<p> Gens tibi est {{ gens }} </p>
+
+<h2> Quod est praenōmen tibi? </h2>
+
+<form action="{% url 'chargen:create' %}"  method="post">
+
+	{% csrf_token %}
+
+	<input type="hidden" name="sexus" value="{{ sexus }}">
+	<input type="hidden" name="gens" value="{{ gens }}">
+
+	{% for p in praenomina %}
+
+	<input type="radio" id="{{ p }}" name="praenomen" value="{{ p }}" required>
+	<label for="{{ p }}">{{ p }}</label></br>
+
+	{% endfor %}
+
+	<input type="submit" value="Mitte">
+
+</form>
+
+
+{% else %}
+<p> You aren't logged in.</p>
+{% endif %}
+{% endblock %}

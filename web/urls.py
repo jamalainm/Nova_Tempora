@@ -12,6 +12,7 @@ from evennia.web.urls import urlpatterns
 # eventual custom patterns
 custom_patterns = [
     # url(r'/desired/url/', view, name='example'),
+    path('chargen/', include('web.chargen.urls')),
 ]
 
 # this is required by Django.

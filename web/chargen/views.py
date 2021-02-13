@@ -110,8 +110,19 @@ def creating(request):
         if submitted:
             if sexus == 'mās':
                 nōmen = gens[:-1] + 'us'
+                nōmen_gen = nōmen[:-2] + 'ī'
+                if praenomen == 'Opiter':
+                    praenomen_gen = 'Opitris'
+                elif praenomen == 'Caesō':
+                    praenomen_gen = 'Caesōnis'
+                elif praenomen == 'Sertor':
+                    praenomen_gen = 'Sertōris'
+                else:
+                    praenomen_gen = praenomen[:-2] + 'ī'
             else:
                 nōmen = gens
+                nōmen_gen = nōmen + 'e'
+                praenomen_gen = praenomen + 'e'
             nōmina = praenomen + ' ' + nōmen
             # Create the actual character object
             typeclass = settings.BASE_CHARACTER_TYPECLASS
@@ -125,10 +136,12 @@ def creating(request):
                     home = home,
                     permissions=perms,
                     attributes=[
+                        ('lang', 'latin'),
                         ('sexus', sexus),
                         ('gens', gens),
                         ('praenōmen', praenomen),
                         ('nōmen', nōmen),
+                        ('forms',{'nom_sg': [praenomen, nōmen], 'gen_sg': [praenomen_gen, nōmen_gen]}),
                         ]
                     )
             user.db._playable_characters.append(char)

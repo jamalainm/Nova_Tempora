@@ -13,12 +13,12 @@ class DeclineNoun:
             return [3, self.gen[:-2]]
         elif self.gen[-2:] == "us":
             return [4, self.gen[:-2]]
-        elif self.nom[-2:] == "es":
+        elif self.nom[-2:] == "ēs":
             return [5, self.gen[:-1]]
         elif self.gen[-2:] == "um":
             if self.nom[-2:] == "ae":
                 return [6, self.nom[:-2]]
-            elif self.nom[-1] == "i":
+            elif self.nom[-1] == "ī":
                 return [7, self.nom[:-1]]
             elif self.nom[-1] == "a":
                 return [8, self.nom[:-1]]
@@ -29,7 +29,7 @@ class DeclineNoun:
 
         base = DeclineNoun.id_declension(self)[1] 
 
-        endings = ['ae', 'am', 'a', 'a', 'ae', 'arum', 'is', 'as', 'is', 'ae']
+        endings = ['ae', 'am', 'ā', 'a', 'ae', 'ārum', 'īs', 'ās', 'īs', 'ae']
 
         forms = [self.nom, self.gen]
 
@@ -42,7 +42,7 @@ class DeclineNoun:
 
         base = DeclineNoun.id_declension(self)[1] 
 
-        endings = ['o', 'um','o','e','i','orum','is','os','is','i']
+        endings = ['ō', 'um','ō','e','ī','ōrum','īs','ōs','īs','ī']
 
         forms = [self.nom,self.gen]
 
@@ -52,7 +52,7 @@ class DeclineNoun:
         if base[-1] == 'r':
             forms[5] = self.nom
         elif base[-1] == 'i':
-            forms[5] = base[:-1] + 'i'
+            forms[5] = base[:-1] + 'ī'
 
         if int(self.gender) == 3:
             forms[3] = self.nom
@@ -75,7 +75,7 @@ class DeclineNoun:
 
         forms = [self.nom,self.gen]
 
-        endings = ['i','em','e','blah','es','um','ibus','es','ibus','es']
+        endings = ['ī','em','e','blah','ēs','um','ibus','ēs','ibus','ēs']
 
         for i in endings:
             forms.append(base + i)
@@ -105,7 +105,7 @@ class DeclineNoun:
             forms[9] = base + 'a'
             forms[11] = base + 'a'
             if self.nom[-1] == 'e' or self.nom[-2:] in ['al','ar']:
-                forms[4] = base + 'i'
+                forms[4] = base + 'ī'
                 forms[6] = base + 'ia'
                 forms[7] = base + 'ium'
                 forms[9] = base + 'ia'
@@ -117,7 +117,7 @@ class DeclineNoun:
 
         base = DeclineNoun.id_declension(self)[1]
 
-        endings = ['ui','um','u','us','us','uum','ibus','us','ibus','us']
+        endings = ['uī','um','ū','us','ūs','uum','ibus','ūs','ibus','ūs']
 
         forms = [self.nom,self.gen]
 

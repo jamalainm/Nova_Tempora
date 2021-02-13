@@ -2,7 +2,8 @@
 
 {% extends "base.html" %}
 {% block content %}
-{% if user.is_autenticated %}
+
+{% if user.is_authenticated %}
 
 <h1>Character Generation</h1>
 
@@ -11,7 +12,7 @@
 	<ul>
 		{% for sub_app in sub_apps %}
 		
-		<li><a href="/chargen/{{ sub_app.app_id }}/">{{ sub_app.char_name }}</a></li>
+		<li><a href="/chargen/{{ sub_app.app_id }}/">{{ sub_app.praenomen }} (Gens: {{ sub_app.gens }})</a></li>
 
 		{% endfor %}
 	</ul>

@@ -6,14 +6,14 @@
 
 <h1> Ad Persōnam Creandam </h1>
 
-{% if user.is_autenticated %}
+{% if user.is_authenticated %}
 
 <p> Sexus tibi est {{ sexus }} </p>
 <p> Gens tibi est {{ gens }} </p>
 
 <h2> Quod est praenōmen tibi? </h2>
 
-<form action="{% url 'chargen:create' %}"  method="post">
+<form action="{% url 'chargen:creating' %}"  method="post">
 
 	{% csrf_token %}
 

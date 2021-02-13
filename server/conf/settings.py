@@ -39,6 +39,8 @@ LANGUAGE_CODE= "la"
 INSTALLED_APPS += ('web.chargen',)
 MULTISESSION_MODE = 3
 
+DEBUG = True
+
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
 ######################################################################

@@ -5,6 +5,7 @@ help.
 
 """
 from django.conf.urls import url, include
+from django.urls import path
 
 # default evennia patterns
 from evennia.web.urls import urlpatterns

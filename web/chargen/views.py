@@ -10,7 +10,7 @@ from datetime import datetime
 from evennia.objects.models import ObjectDB
 from django.conf import settings
 from evennia.utils import create
-from web.chargen.static.name_data.gens_class_praenomina import name_data
+from web.chargen.static.chargen.name_data.gens_class_praenomina import name_data
 
 def index(request):
     current_user = request.user # current user logged in
@@ -50,7 +50,7 @@ def creating(request):
 
         genders = ['mās','muliebris']
 
-        context = {'genders': genders}
+        context = {'genders': genders, 'user': user}
 
         return render(request, 'chargen/gender_select.html', context)
 
@@ -60,8 +60,9 @@ def creating(request):
         sexus = request.POST.get('sexus')
         gentes = name_data.keys()
         context = {
-                'gender': gender,
+                'sexus': sexus,
                 'gentes': gentes,
+                'user': user,
                 }
 
         return render(request, 'chargen/gens_select.html', context)
@@ -79,10 +80,13 @@ def creating(request):
         praenomina = name_data[gens]['praenomina'][gender]
 
         context = {
-                'gender': gender,
+                'sexus': sexus,
                 'gens': gens,
                 'praenomina': praenomina,
+                'user': user,
                 }
+
+        return render(request, 'chargen/praenomen_select.html', context)
 
     else:
 

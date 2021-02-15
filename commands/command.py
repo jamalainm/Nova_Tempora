@@ -2,6 +2,7 @@
 
 from utils.latin.adjective_agreement import us_a_um
 from utils.latin.which_one import which_one
+from utils.latin.check_grammar import check_case
 from evennia.utils import create
 # from typeclasses.rēs import Rēs
 
@@ -303,12 +304,10 @@ class Relinque(Command):
             return
 
         # Check the grammar
-        lower_case = [x.lower() for x in obj.db.forms['acc_sg']]
-        if self.args.strip().lower() not in lower_case:
-            caller.msg(f"(Did you mean '{obj.db.forms['acc_sg'][0]}'?)")
+        if check_case(caller, obj, self.args, 'acc_sg') == False:
             return
 
-        # Call the objects script's at_before_drop() method
+        # Call the object's scripts at_before_drop() method
         if not obj.at_before_drop(caller):
             return
 

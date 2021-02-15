@@ -26,7 +26,7 @@ def detail(request, app_id):
     sexus = app.sexus
     gens = app.gens
     praenomen = app.praenomen
-    if sexus == 'mās':
+    if sexus == 'māre':
         nōmen = gens[:-1] + 'us'
     else:
         nōmen = gens
@@ -48,7 +48,7 @@ def creating(request):
     # Go to the first page of character creation
     if request.method != 'POST':
 
-        genders = ['mās','muliebris']
+        genders = ['māre','muliebre']
 
         context = {'genders': genders, 'user': user}
 
@@ -72,7 +72,7 @@ def creating(request):
 
         sexus = request.POST.get('sexus')
         gens = request.POST.get('gens')
-        if sexus == 'mās':
+        if sexus == 'māre':
             gender = 'masculine'
         else:
             gender = 'feminine'
@@ -108,7 +108,7 @@ def creating(request):
         app.save()
 
         if submitted:
-            if sexus == 'mās':
+            if sexus == 'māre':
                 nōmen = gens[:-1] + 'us'
                 nōmen_gen = nōmen[:-2] + 'ī'
                 if praenomen == 'Opiter':
@@ -142,6 +142,15 @@ def creating(request):
                         ('praenōmen', praenomen),
                         ('nōmen', nōmen),
                         ('forms',{'nom_sg': [praenomen, nōmen], 'gen_sg': [praenomen_gen, nōmen_gen]}),
+                        ('ingenia',{
+                            'vīrēs': 10,
+                            'pernīcitās': 10,
+                            'valētūdō': 10,
+                            'ratiō': 10,
+                            'sapientia': 10,
+                            'grātia': 10,
+                            },
+                            )
                         ]
                     )
             user.db._playable_characters.append(char)

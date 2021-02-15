@@ -11,7 +11,7 @@ class DeclineNoun:
             return [1, self.gen[:-2]]
         elif self.gen[-2:] == "is":
             return [3, self.gen[:-2]]
-        elif self.gen[-2:] == "us":
+        elif self.gen[-2:] == "ūs":
             return [4, self.gen[:-2]]
         elif self.nom[-2:] == "ēs":
             return [5, self.gen[:-1]]
@@ -129,7 +129,7 @@ class DeclineNoun:
 #        if int(self.gender) == 3:
         if self.gender == 'neutrum':
             forms[3] = self.nom
-            forms[2] = base + 'u'
+            forms[2] = base + 'ū'
             forms[5] = self.nom
             forms[6] = base + 'ua'
             forms[9] = base + 'ua'

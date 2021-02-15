@@ -26,7 +26,7 @@ def which_one(args, caller, stuff):
 
         # if fewer objects are found than specified, provide feedback
         if len(same) < int(thing[0]):
-            caller.msg(f"Nōn sunt {thing[0]}, sed {len(same)}!")
+            caller.msg(f"Nōn sunt {thing[0].strip()}, sed {len(same)}!")
             return None, args
 
         # match the number with the item
@@ -54,7 +54,7 @@ def which_one(args, caller, stuff):
         # if more than one item is found, provide feedback
         elif len(same) != 1:
             caller.msg(f"Sunt {len(same)}. Ecce:")
-            for index.item in enumerate(same):
+            for index, item in enumerate(same):
                 caller.msg(f"{index +1}-{item}")
             return None, args
 

@@ -296,13 +296,16 @@ class Relinque(Command):
             caller.msg("Quid relinquere velis?")
             return
 
+        # Ensure the intended object is targeted
         stuff = caller.contents
         obj, self.args = which_one(self.args, caller, stuff)
         if not obj:
             return
+
+        # Check the grammar
         lower_case = [x.lower() for x in obj.db.forms['acc_sg']]
         if self.args.strip().lower() not in lower_case:
-            self.msg(f"(Did you mean '{obj.db.forms['acc_sg'][0]}'?)")
+            caller.msg(f"(Did you mean '{obj.db.forms['acc_sg'][0]}'?)")
             return
 
         # Call the objects script's at_before_drop() method

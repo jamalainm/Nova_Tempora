@@ -15,6 +15,8 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
+from evennia import CmdSet
+from commands import command
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -34,6 +36,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        self.add(command.Creātur())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
@@ -94,3 +97,12 @@ class SessionCmdSet(default_cmds.SessionCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+
+class CreāreCmdset(CmdSet):
+    """
+    This cmdset is used in creating Latin-inflected object
+    """
+    key = "Creāre"
+    def at_cmdset_creation(self):
+        "Hoc vocātur cum initium factum sit."
+        self.add(command.Creātur())

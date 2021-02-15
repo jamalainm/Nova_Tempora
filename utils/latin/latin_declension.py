@@ -54,7 +54,8 @@ class DeclineNoun:
         elif base[-1] == 'i':
             forms[5] = base[:-1] + 'ī'
 
-        if int(self.gender) == 3:
+#        if int(self.gender) == 3:
+        if self.gender == 'neutrum':
             forms[3] = self.nom
             forms[5] = self.nom
             forms[6] = base + 'a'
@@ -69,7 +70,7 @@ class DeclineNoun:
 
         syllabifier = Syllabifier()
 
-        vowels = ['a','e','i','o','u','a','e','i','o','u']
+        vowels = ['a','e','i','o','u','ā','ē','ī','ō','ū']
 
         base = DeclineNoun.id_declension(self)[1]
 
@@ -98,7 +99,8 @@ class DeclineNoun:
 
             forms[7] = forms[7][:-2] + 'i' + forms[7][-2:]
 
-        if int(self.gender) == 3:
+#        if int(self.gender) == 3:
+        if self.gender == 'neutrum':
             forms[5] = self.nom
             forms[3] = self.nom
             forms[6] = base + 'a'
@@ -124,7 +126,8 @@ class DeclineNoun:
         for i in endings:
             forms.append(base + i)
 
-        if int(self.gender) == 3:
+#        if int(self.gender) == 3:
+        if self.gender == 'neutrum':
             forms[3] = self.nom
             forms[2] = base + 'u'
             forms[5] = self.nom
@@ -138,9 +141,9 @@ class DeclineNoun:
 
         base = DeclineNoun.id_declension(self)[1] 
 
-        base = base[:-1] + "e"
+        base = base[:-1] + "ē"
 
-        endings = ['i', 'm', '', 's', 's', 'rum', 'bus', 's', 'bus', 's']
+        endings = ['ī', 'm', '', 's', 's', 'rum', 'bus', 's', 'bus', 's']
 
         forms = [self.nom,self.gen]
 
@@ -150,8 +153,8 @@ class DeclineNoun:
         forms[3] = forms[3][:-2] + 'em'
 
         if base[-2] != 'i':
-            forms[1] = forms[1][:-2] + 'ei'
-            forms[2] = forms[2][:-2] + 'ei'
+            forms[1] = forms[1][:-2] + 'eī'
+            forms[2] = forms[2][:-2] + 'eī'
 
         return forms
 
@@ -159,7 +162,7 @@ class DeclineNoun:
 
         base = DeclineNoun.id_declension(self)[1]
 
-        endings = ['ae','arum','is','as','is','ae','ae','arum','is','as','is','ae']
+        endings = ['ae','ārum','īs','ās','īs','ae','ae','ārum','īs','ās','īs','ae']
 
         forms = []
 
@@ -172,7 +175,7 @@ class DeclineNoun:
 
         base = DeclineNoun.id_declension(self)[1]
 
-        endings = ['i','orum','is','os','is','i','i','orum','is','os','is','i']
+        endings = ['ī','ōrum','īs','ōs','īs','ī','ī','ōrum','īs','ōs','īs','ī']
 
         forms = []
 
@@ -185,7 +188,7 @@ class DeclineNoun:
 
         base = DeclineNoun.id_declension(self)[1]
 
-        endings = ['a','orum','is','a','is','a','a','orum','is','a','is','a']
+        endings = ['a','ōrum','īs','a','īs','a','a','ōrum','īs','a','īs','a']
 
         forms = []
 

@@ -1,3 +1,9 @@
+# file mygame/commands/command.py
+
+from utils.latin.adjective_agreement import us_a_um
+from evennia.utils import create
+from typeclasses.rēs import Rēs
+
 """
 Commands
 
@@ -186,3 +192,77 @@ class Command(BaseCommand):
 #                 self.character = self.caller.get_puppet(self.session)
 #             else:
 #                 self.character = None
+
+class Creātur(Command):
+    """
+    Create an object with grammatical gender, a nominative singular,
+    and a genitive singular form.
+
+    Usage:
+        creātur <nom_sg> <gen_sg> <gender> <typeclass>
+
+    """
+
+    key = "creātur"
+    locks = "cmd:all()"
+    help_category = "General"
+    auto_help = True
+
+    def parse(self):
+
+        arglist = [arg.strip() for arg in self.args.split()]
+
+        self.arglist = arglist
+
+    def func(self):
+        """
+        Creates the object.
+        """
+
+        caller = self.caller
+
+        # Make sure the proper number of arguments are used
+        if not self.args or len(self.arglist) != 4:
+            caller.msg("Scrībe: creātur <nōminātīvus cāsus> <genetīvus cāsus> <sexus> <genus>")
+            return
+
+        # Make sure a proper gender is accepted
+        sexus = self.arglist[2]
+        if sexus not in ['māre','muliebre','neutrum']:
+            caller.msg("Estne sexus 'māre' an 'muliebre' an 'neutrum'?")
+            return
+
+        # Make sure an acceptable genitive is submitted
+        genitive = self.arglist[1]
+        if not genitive.endswith('ae') and not genitive.endswith('ī') and not genitive.endswith('is') and not genitive.endswith('ūs') and not genitive.endswith('um'):
+            caller.msg("Eheu, ista forma cāsūs genitīvī nōn est accipienda.")
+            return
+
+        # create the object
+        name = self.arglist[0]
+#        typeclass = 'rēs'
+        typeclass = f"typeclasses.rēs.{self.arglist[3]}"
+        
+        # create object (if not a valid typeclass, the default
+        # object typeclass will automatically be used)
+#        lockstring = self.new_obj_lockstring.format(id=caller.id)
+        obj = create.create_object(
+                typeclass,
+                name,
+                caller,
+                home=caller,
+#                locks=lockstring,
+                report_to=caller,
+                attributes=[
+                    ('lang', 'latin'),
+                    ('sexus', sexus),
+                    ('forms',{'nom_sg': [name], 'gen_sg': [genitive]}),
+                    ]
+                )
+        message = f"Ā tē nova {obj.typename} creāta est: {obj.name}."
+        if not obj:
+            return
+        if not obj.db.desc:
+            obj.db.desc = "Nihil ēgregiī vidēs."
+
+        caller.msg(message)

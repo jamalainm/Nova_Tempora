@@ -1,8 +1,9 @@
 # file mygame/commands/command.py
 
 from utils.latin.adjective_agreement import us_a_um
+from utils.latin.which_one import which_one
 from evennia.utils import create
-from typeclasses.rēs import Rēs
+# from typeclasses.rēs import Rēs
 
 """
 Commands
@@ -205,7 +206,7 @@ class Creātur(Command):
 
     key = "creātur"
     locks = "cmd:all()"
-    help_category = "General"
+    help_category = "Iussa Administrātōrum"
     auto_help = True
 
     def parse(self):
@@ -266,3 +267,60 @@ class Creātur(Command):
             obj.db.desc = "Nihil ēgregiī vidēs."
 
         caller.msg(message)
+
+class Relinque(Command):
+    """
+    Get rid of something
+    
+    Usage:
+        relinque <rem>
+
+    Lets you move an object from your inventory into the location
+    that you currently occupy.
+    """
+
+    key = "relinque"
+    locks = "cmd:all()"
+    help_category = "Iussa Latīna"
+    auto_help = True
+
+    def parse(self):
+
+        self.arglist = [arg.strip() for arg in self.args.split()]
+
+    def func(self):
+        """ Implement command """
+
+        caller = self.caller
+        if not self.arglist or len(self.arglist) != 1:
+            caller.msg("Quid relinquere velis?")
+            return
+
+        stuff = caller.contents
+        obj, self.args = which_one(self.args, caller, stuff)
+        if not obj:
+            return
+        lower_case = [x.lower() for x in obj.db.forms['acc_sg']]
+        if self.args.strip().lower() not in lower_case:
+            self.msg(f"(Did you mean '{obj.db.forms['acc_sg'][0]}'?)")
+            return
+
+        # Call the objects script's at_before_drop() method
+        if not obj.at_before_drop(caller):
+            return
+
+        # Adding the following to deal with clothing:
+        if obj.db.held:
+            obj.db.held = False
+        if obj.db.worn:
+            obj.remove(caller,quiet=True)
+
+        # Move object to caller's location
+        obj.move_to(caller.location, quiet=True)
+        # The below is for when we have encumberance implemented
+#        caller.db.lift_carry['current'] -= obj.db.physical['mass']
+        caller.msg(f"{obj.db.forms['acc_sg'][0]} relīquistī.")
+        caller.location.msg_contents(f"{caller.name} {obj.db.forms['acc_sg'][0]} relīquit.", exclude=caller)
+
+        # call the object script's at_drop() method.
+        obj.at_drop(caller)

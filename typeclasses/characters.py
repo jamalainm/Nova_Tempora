@@ -159,8 +159,8 @@ class Character(EventCharacter,LatinNoun,TBBasicCharacter):
         bonus = self.db.ingenia['valētūdō']
         bonus = (bonus - 11) if bonus % 2 else (bonus - 10)
         # 'pv' = 'puncta valētūdinis' (points of health)
-        max_vp = (10 + bonus) if (10 + bonus) > 0 else 1
-        self.db.vp = {'max':max_vp,"nunc":max_vp}
+        max_pv = (10 + bonus) if (10 + bonus) > 0 else 1
+        self.db.pv = {'max':max_pv,"nunc":max_pv}
 
         strength = self.db.ingenia['vīrēs']
         # 'toll' < 'tollere' = to lift; 'fer' < 'ferre' = 'to bear'

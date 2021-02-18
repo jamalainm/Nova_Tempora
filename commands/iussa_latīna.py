@@ -47,7 +47,7 @@ class Creātur(Command):
     """
 
     key = "creātur"
-    locks = "cmd:all()"
+    locks = "cmd:perm(Builders)"
     help_category = "Iussa Administrātōrum"
     auto_help = True
 

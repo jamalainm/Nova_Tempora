@@ -110,6 +110,111 @@ class Creātur(Command):
 
         caller.msg(message)
 
+class Cape(MuxCommand):
+    """
+    Take something.
+
+    Usage:
+        cape <rem>
+
+    Lets you move an object from the location you occupy into
+    your inventory
+    """
+
+    key = "cape"
+    locks = "cmd:all()"
+    help_category = "Iussa Latīna"
+    auto_help = True
+
+    def func(self):
+        """ implements the command. """
+
+        caller = self.caller
+        current_carry = caller.db.toll_fer['ferēns']
+        carry_max = caller.db.toll_fer['max']
+
+        # Return an error if there are too many or too few arguments
+        if len(self.arglist) != 1:
+            caller.msg("Quid capere velis?")
+            return
+
+        # Make a list of objects in caller's location
+        stuff = caller.location.contents
+
+        # Check to see if more than one target has the name in args;
+        # Return the target and the args.
+        target, self.args = which_one(self.args, caller, stuff)
+        if not target:
+            return
+
+        # Check that the proper grammatical case is used
+        if check_case(caller, target, self.args, 'acc_sg') == False:
+            return
+
+        # Don't let the caller take themselves
+        if caller == target:
+            caller.msg("Tū tē capere nōn potes!")
+            return
+
+        # Don't let the caller get non-gettable objects.
+        if not target.access(caller, "get"):
+            if target.db.get_err_msg:
+                caller.msg(target.db.get_err_msg)
+            else:
+                caller.msg(f"Tū {target.db.forms['acc_sg'][0]} capere nōn potes.")
+                return
+
+        # Check to see if hands are free
+
+        possessions = caller.contents
+        hands = ['sinistrā','dextrā']
+        full_hands = 0
+        held_items = []
+        for possession in possessions:
+            if possession.db.tenētur:
+                if possession.db.tenētur in hands:
+                    full_hands += 1
+                    held_items.append(possession)
+                elif held == 'ambābus':
+                    full_hands += 2
+                    held_items.append(possession)
+
+        if full_hands >= 2:
+            caller.msg("Manūs tuae sunt plēnae!")
+
+        # calling at_before_get hook method
+        if not target.at_before_get(caller):
+            return
+
+        # See if character can carry any more weight/mass
+        if not target.db.physical:
+            target_mass = 0
+        else:
+            target_mass = target.db.physical['mass']
+
+        if current_carry + target_mass > carry_max:
+            caller.msg("Plūs ponderis ferre nōn potes!")
+            return
+
+        # Move target to inventory if possible
+        target.move_to(caller, quiet=True)
+        caller.db.toll_fer['ferēns'] += target_mass
+        caller.msg(f"{target.db.forms['acc_sg'][0]} cēpistī.")
+        caller.location.msg_contents(
+                f"{caller.name} {target.db.forms['acc_sg'][0]} cēpit.",
+                exclude=caller
+                )
+
+        # calling at_get hook method
+        target.at_get(caller)
+
+        # Put the target in a hand; dominant if not already full
+        if held_items:
+            hands.remove(held_items[0].db.tenētur)
+            target.db.tenētur = hands[0]
+        else:
+            target.db.tenētur = caller.db.handedness
+
 class Relinque(Command):
     """
     Get rid of something

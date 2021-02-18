@@ -127,9 +127,9 @@ class Character(EventCharacter,LatinNoun,TBBasicCharacter):
         # assign handedness
 
         if random.random() >= 0.9:
-            self.db.handedness = 'left'
+            self.db.handedness = 'sinistrā'
         else:
-            self.db.handedness = 'right'
+            self.db.handedness = 'dextrā'
 
         # set hands as empty
 

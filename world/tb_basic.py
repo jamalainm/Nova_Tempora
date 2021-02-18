@@ -1,3 +1,4 @@
+# file mygame/world/tb_basic.py
 """
 Simple turn-based combat system
 
@@ -46,7 +47,7 @@ from random import choice
 from random import randint
 from random import random
 from evennia import DefaultCharacter, Command, default_cmds, DefaultScript
-from commands.command import MuxCommand
+from commands.iussa_latīna import MuxCommand
 from evennia.commands.default.help import CmdHelp
 # adding the following to begin translation into Latin
 from utils.latin import which_one

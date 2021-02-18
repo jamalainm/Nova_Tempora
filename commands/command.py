@@ -20,21 +20,6 @@ from evennia.commands.default import muxcommand
 
 # from evennia import default_cmds
 
-# Adding the following to accommodate Latin clothing
-
-class MuxCommand(muxcommand.MuxCommand):
-    
-    def at_post_cmd(self):
-        """
-        This hook is called after the command has finished executing
-        (after self.func()).
-        """
-        caller = self.caller
-        if caller.db.pv:
-            prompt = "\n|wVita: %i/%i) |n" % (caller.db.pv['nunc'],caller.db.pv['max'])
-
-            caller.msg(prompt)
-
 class Command(BaseCommand):
     """
     Inherit from this if you want to create your own command styles
@@ -338,8 +323,8 @@ class Relinque(Command):
         obj.move_to(caller.location, quiet=True)
         # The below is for when we have encumberance implemented
 #        caller.db.lift_carry['current'] -= obj.db.physical['mass']
-        caller.msg(f"{obj.db.forms['acc_sg'][0]} relīquistī.")
-        caller.location.msg_contents(f"{caller.name} {obj.db.forms['acc_sg'][0]} relīquit.", exclude=caller)
+        caller.msg(f"{obj.db.formae['acc_sg'][0]} relīquistī.")
+        caller.location.msg_contents(f"{caller.name} {obj.db.formae['acc_sg'][0]} relīquit.", exclude=caller)
 
         # call the object script's at_drop() method.
         obj.at_drop(caller)

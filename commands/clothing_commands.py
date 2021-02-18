@@ -6,7 +6,7 @@
 #
 # COMMANDS START HERE
 
-from commands.command import MuxCommand
+from commands.iussa_latīna import MuxCommand
 from evennia import default_cmds
 from evennia.utils import evtable
 from utils.latin.which_one import which_one

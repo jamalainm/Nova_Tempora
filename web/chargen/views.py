@@ -141,16 +141,8 @@ def creating(request):
                         ('gens', gens),
                         ('praenōmen', praenomen),
                         ('nōmen', nōmen),
-                        ('forms',{'nom_sg': [praenomen, nōmen], 'gen_sg': [praenomen_gen, nōmen_gen]}),
-                        ('ingenia',{
-                            'vīrēs': 10,
-                            'pernīcitās': 10,
-                            'valētūdō': 10,
-                            'ratiō': 10,
-                            'sapientia': 10,
-                            'grātia': 10,
-                            },
-                            )
+                        ('formae',{'nom_sg': [praenomen, nōmen], 'gen_sg': [praenomen_gen, nōmen_gen]}),
+                        ('ingenia',{'vīrēs': 10, 'pernīcitās': 10, 'valētūdō': 10, 'ratiō': 10, 'sapientia': 10, 'grātia': 10}),
                         ]
                     )
             user.db._playable_characters.append(char)

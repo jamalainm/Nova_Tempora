@@ -6,10 +6,13 @@ set and has a single command defined on itself with the same name as its key,
 for allowing Characters to traverse the exit to its destination.
 
 """
-from evennia import DefaultExit
+# from evennia import DefaultExit
+from evennia.contrib.ingame_python.typeclasses import EventExit
 
-
-class Exit(DefaultExit):
+# Commenting out and changing inherit to EventExit for ingame python
+# class Exit(DefaultExit):
+#
+class Exit(EventExit):
     """
     Exits are connectors between rooms. Exits are normal Objects except
     they defines the `destination` property. It also does work in the
@@ -34,5 +37,7 @@ class Exit(DefaultExit):
                                         not be called if the attribute `err_traverse` is
                                         defined, in which case that will simply be echoed.
     """
+    def at_object_creation(self):
+        self.db.formae['acc_sg'] = [self.key]
+        self.db.desc = self.destination
 
-    pass

@@ -15,8 +15,25 @@ Commands describe the input the account can do to the game.
 
 from evennia.commands.command import Command as BaseCommand
 
+# Adding the following to accommodate Latin clothing
+from evennia.commands.default import muxcommand
+
 # from evennia import default_cmds
 
+# Adding the following to accommodate Latin clothing
+
+class MuxCommand(muxcommand.MuxCommand):
+    
+    def at_post_cmd(self):
+        """
+        This hook is called after the command has finished executing
+        (after self.func()).
+        """
+        caller = self.caller
+        if caller.db.pv:
+            prompt = "\n|wVita: %i/%i) |n" % (caller.db.pv['nunc'],caller.db.pv['max'])
+
+            caller.msg(prompt)
 
 class Command(BaseCommand):
     """
@@ -258,7 +275,7 @@ class Creātur(Command):
                 attributes=[
                     ('lang', 'latin'),
                     ('sexus', sexus),
-                    ('forms',{'nom_sg': [name], 'gen_sg': [genitive]}),
+                    ('formae',{'nom_sg': [name], 'gen_sg': [genitive]}),
                     ]
                 )
         message = f"Ā tē nova {obj.typename} creāta est: {obj.name}."

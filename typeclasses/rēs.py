@@ -166,20 +166,20 @@ class Rēs(EventObject,LatinNoun):
 
         # add all of the case endings to attributes
 
-        word = DeclineNoun(self.db.forms['nom_sg'][0],self.db.forms['gen_sg'][0],self.db.sexus)
+        word = DeclineNoun(self.db.formae['nom_sg'][0],self.db.formae['gen_sg'][0],self.db.sexus)
         new_forms = word.make_paradigm()
         all_forms = new_forms
         remaining_forms = all_forms[2:]
-        self.db.forms['dat_sg'] = [remaining_forms[0][1]]
-        self.db.forms['acc_sg'] = [remaining_forms[1][1]]
-        self.db.forms['abl_sg'] = [remaining_forms[2][1]]
-        self.db.forms['voc_sg'] = [remaining_forms[3][1]]
-        self.db.forms['nom_pl'] = [remaining_forms[4][1]]
-        self.db.forms['gen_pl'] = [remaining_forms[5][1]]
-        self.db.forms['dat_pl'] = [remaining_forms[6][1]]
-        self.db.forms['acc_pl'] = [remaining_forms[7][1]]
-        self.db.forms['abl_pl'] = [remaining_forms[8][1]]
-        self.db.forms['voc_pl'] = [remaining_forms[9][1]]
+        self.db.formae['dat_sg'] = [remaining_forms[0][1]]
+        self.db.formae['acc_sg'] = [remaining_forms[1][1]]
+        self.db.formae['abl_sg'] = [remaining_forms[2][1]]
+        self.db.formae['voc_sg'] = [remaining_forms[3][1]]
+        self.db.formae['nom_pl'] = [remaining_forms[4][1]]
+        self.db.formae['gen_pl'] = [remaining_forms[5][1]]
+        self.db.formae['dat_pl'] = [remaining_forms[6][1]]
+        self.db.formae['acc_pl'] = [remaining_forms[7][1]]
+        self.db.formae['abl_pl'] = [remaining_forms[8][1]]
+        self.db.formae['voc_pl'] = [remaining_forms[9][1]]
 
         # Add the variant forms to aliases for easy interaction
         for form in all_forms:
@@ -187,10 +187,20 @@ class Rēs(EventObject,LatinNoun):
 
     #making a new get_display_name that is aware of case and not
     # dependent on the key of the object
+    # Copied the below from typeclasses/characters.py
     def get_display_name(self, looker, **kwargs):
-        if self.locks.check_lockstring(looker, "perm(Builder)"):
-            return "{}(#{})".format(self.db.forms['nom_sg'][0], self.id)
-        return self.db.forms['nom_sg'][0]
+        if not self.db.formae:
+            if self.locks.check_lockstring(looker, "perm(Builder)"):
+                return "{}(#{})".format(self.key, self.id)
+            return self.key
+        else:
+            if self.locks.check_lockstring(looker, "perm(Builder)"):
+                return "{}(#{})".format(self.key, self.id)
+            return self.key
+#    def get_display_name(self, looker, **kwargs):
+#        if self.locks.check_lockstring(looker, "perm(Builder)"):
+#            return "{}(#{})".format(self.db.formae['nom_sg'][0], self.id)
+#        return self.db.formae['nom_sg'][0]
 
 # Trying to make something that could be an object players can put other objects in and take objects out of. Maybe just add a "can_hold" tag to something; no need for a brand new typeclass
 #

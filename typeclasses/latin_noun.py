@@ -143,12 +143,12 @@ class LatinNoun(DefaultObject):
         """
         key = kwargs.get("key", self.key)
         key = ansi.ANSIString(key) # This is needed to allow inflection of colored names
-        if self.db.nom_pl:
-            plural = self.db.nom_pl[0]
+        if self.db.formae:
+            plural = self.db.formae['nom_pl'][0]
         else:
             plural = self.key
         plural = "%s %s" % (count, plural)
-        if self.db.nom_sg:
+        if self.db.formae:
             singular = self.key
         else:
             singular = self.key
@@ -187,8 +187,8 @@ class LatinNoun(DefaultObject):
             if con.destination:
                 exits.append(con.key)
             elif con.has_account:
-                if con.db.is_burning:
-                    users.append("|y(ardens)|n |c%s|n" % key)
+                if con.db.ardēns:
+                    users.append("|y(ardēns)|n |c%s|n" % key)
                 else:
                     users.append("|c%s|n" % key)
             else:
@@ -229,7 +229,7 @@ class LatinNoun(DefaultObject):
             for exit in exits:
                 colorful_exits.append(f"|lc{exit}|lt|g{exit}|n|le")
             colorful_exits = sorted(colorful_exits)
-            string += "\n|wAd hos locos potes ire:|n\n " + LatinNoun.list_to_string(colorful_exits)
+            string += "\n|wAd hōs locōs potes īre:|n\n " + LatinNoun.list_to_string(colorful_exits)
         if users or things:
             # handle pluralization of things (never pluralize users)
             thing_strings = []
@@ -238,7 +238,7 @@ class LatinNoun(DefaultObject):
                 if nitem == 1:
                     key, _ = itemlist[0].get_numbered_name(nitem, looker, key=key)
                     if itemlist[0].db.is_burning:
-                        key = "|y(ardens)|n " + key
+                        key = "|y(ardēns)|n " + key
                 else:
                     key = [item.get_numbered_name(nitem, looker, key=key)[1] for item in itemlist][
                         0

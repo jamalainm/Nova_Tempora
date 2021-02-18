@@ -161,7 +161,7 @@ class Cape(MuxCommand):
             if target.db.get_err_msg:
                 caller.msg(target.db.get_err_msg)
             else:
-                caller.msg(f"Tū {target.db.forms['acc_sg'][0]} capere nōn potes.")
+                caller.msg(f"Tū {target.db.formae['acc_sg'][0]} capere nōn potes.")
                 return
 
         # Check to see if hands are free
@@ -199,9 +199,9 @@ class Cape(MuxCommand):
         # Move target to inventory if possible
         target.move_to(caller, quiet=True)
         caller.db.toll_fer['ferēns'] += target_mass
-        caller.msg(f"{target.db.forms['acc_sg'][0]} cēpistī.")
+        caller.msg(f"{target.db.formae['acc_sg'][0]} cēpistī.")
         caller.location.msg_contents(
-                f"{caller.name} {target.db.forms['acc_sg'][0]} cēpit.",
+                f"{caller.name} {target.db.formae['acc_sg'][0]} cēpit.",
                 exclude=caller
                 )
 
@@ -286,6 +286,7 @@ class IussaLatīnaCmdSet(default_cmds.CharacterCmdSet):
         """
         super().at_cmdset_creation()
         self.add(Relinque())
+        self.add(Cape())
 
 class IussaAdministrātōrumCmdSet(default_cmds.CharacterCmdSet):
     """

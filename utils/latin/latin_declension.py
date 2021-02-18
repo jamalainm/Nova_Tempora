@@ -1,3 +1,5 @@
+# file mygame/utils/latin/populate_forms.py
+
 class DeclineNoun:
     def __init__(self,nom,gen,gender,irregular=False):
         self.nom = nom

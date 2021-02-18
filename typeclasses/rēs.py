@@ -14,6 +14,7 @@ inheritance.
 """
 from evennia.contrib.ingame_python.typeclasses import EventObject
 from utils.latin.latin_declension import DeclineNoun
+from utils.latin.populate_forms import populate_forms
 from typeclasses.latin_noun import LatinNoun
 
 class Rēs(EventObject,LatinNoun):
@@ -208,3 +209,33 @@ class Rēs(EventObject,LatinNoun):
 #
 #    self.db.can_hold = True
 #
+
+class Flammable(Rēs):
+
+    def at_object_creation(self):
+
+        nom = self.db.formae['nom_sg'][0]
+        gen = self.db.formae['gen_sg'][0]
+        gender = self.db.sexus
+
+        populate_forms(self,nom,gen,gender)
+
+        self.db.flammable = True
+        self.db.ardēns = False
+
+        self.db.lang = 'latin'
+
+class Hearth(Rēs):
+
+    def at_object_creation(self):
+
+        nom = self.db.formae['nom_sg'][0]
+        gen = self.db.formae['gen_sg'][0]
+        gender = self.db.sexus
+
+        populate_forms(self,nom,gen,gender)
+
+        self.db.flammable = True
+        self.db.ardēns = True
+
+        self.db.lang = 'latin'

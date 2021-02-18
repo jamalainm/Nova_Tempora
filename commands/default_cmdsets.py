@@ -22,6 +22,7 @@ from commands import command
 # New imports
 # from typeclasses.latin_clothing import ClothedCharacterCmdSet
 from commands.clothing_commands import ClothedCharacterCmdSet
+from commands.iussa_latīna import IussaLatīnaCmdSet, IussaAdministrātōrumCmdSet
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -41,12 +42,11 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
-        self.add(command.Creātur())
-        self.add(command.Relinque())
-        #
         # new commandsets
         #
         self.add(ClothedCharacterCmdSet())
+        self.add(IussaLatīnaCmdSet())
+        self.add(IussaAdministrātōrumCmdSet())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

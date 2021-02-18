@@ -103,7 +103,7 @@ class Character(EventCharacter,LatinNoun,TBBasicCharacter):
         # add all of the case endings to attributes
 
         else:
-            word = DeclineNoun(self.db.nom_sg[0],self.db.gen_sg[0],self.db.gender)
+            word = DeclineNoun(self.db.formae['nom_sg'][0],self.db.formae['gen_sg'][0],self.db.gender)
             forms = word.make_paradigm()
             all_forms = forms
             forms = forms[2:]
@@ -160,7 +160,7 @@ class Character(EventCharacter,LatinNoun,TBBasicCharacter):
         bonus = (bonus - 11) if bonus % 2 else (bonus - 10)
         # 'pv' = 'puncta valētūdinis' (points of health)
         max_vp = (10 + bonus) if (10 + bonus) > 0 else 1
-        self.db.vp = {'max':max_vp,"current":max_vp}
+        self.db.vp = {'max':max_vp,"nunc":max_vp}
 
         strength = self.db.ingenia['vīrēs']
         # 'toll' < 'tollere' = to lift; 'fer' < 'ferre' = 'to bear'
@@ -593,7 +593,8 @@ class Character(EventCharacter,LatinNoun,TBBasicCharacter):
         if worn_string_list:
             string += "|/|/%s gerit: %s." % (self, LatinNoun.list_to_string(worn_string_list))
         else:
-            string += "|/|/%s nud%s est!" % (self, 'a' if self.db.sexus == 'muliebre' else 'us')
+#            string += "|/|/%s nūd%s est!" % (self, 'a' if self.db.sexus == 'muliebre' else 'us' if self.db.sexus == 'māre' else 'um')
+            string += f"|/|/{self.key} nūd{us_a_um('nom_sg',self.db.sexus)} est!"
         return string
         # Thinking that the above, added for clothing, might need to only be in the
         # character typeclass

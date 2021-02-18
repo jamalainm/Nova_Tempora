@@ -10,7 +10,7 @@ from datetime import datetime
 from evennia.objects.models import ObjectDB
 from django.conf import settings
 from evennia.utils import create
-from web.chargen.static.chargen.name_data.gens_class_praenomina import name_data
+from utils.latin.gens_class_praenomina import name_data
 
 def index(request):
     current_user = request.user # current user logged in

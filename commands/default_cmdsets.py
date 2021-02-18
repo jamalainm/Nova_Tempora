@@ -1,3 +1,4 @@
+# file mygame/commands/default_cmdsets.py
 """
 Command sets
 
@@ -17,6 +18,10 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 from evennia import default_cmds
 from evennia import CmdSet
 from commands import command
+
+# New imports
+# from typeclasses.latin_clothing import ClothedCharacterCmdSet
+from commands.clothing_commands import ClothedCharacterCmdSet
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -38,6 +43,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         self.add(command.Creātur())
         self.add(command.Relinque())
+        #
+        # new commandsets
+        #
+        self.add(ClothedCharacterCmdSet())
 
 
 class AccountCmdSet(default_cmds.AccountCmdSet):

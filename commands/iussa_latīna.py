@@ -181,6 +181,7 @@ class Cape(MuxCommand):
 
         if full_hands >= 2:
             caller.msg("Manūs tuae sunt plēnae!")
+            return
 
         # calling at_before_get hook method
         if not target.at_before_get(caller):

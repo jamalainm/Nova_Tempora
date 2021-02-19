@@ -14,6 +14,7 @@ from evennia import DefaultRoom, DefaultCharacter
 from utils.latin.latin_declension import DeclineNoun
 from typeclasses.latin_noun import LatinNoun
 from utils.latin.adjective_agreement import us_a_um
+from utils.latin.populate_forms import populate_forms
 
 # added to assign handedness
 import random
@@ -51,69 +52,19 @@ class Character(LatinNoun,TBBasicCharacter):
     def at_object_creation(self):
 
         # Accommodoate and prefer the "Nomen"
-        if self.db.praenōmen:
-            genitive = self.db.formae['gen_sg'][0]
-            gender = self.db.sexus
+        sexus = self.db.sexus
+
+        # Decline object's primary name or praenomen
+        nominative = self.db.formae['nom_sg'][0]
+        genitive = self.db.formae['gen_sg'][0]
+        populate_forms(self, nominative, genitive, sexus)
+
+        # If there is a nōmen, decline it, also
+        if self.db.nōmen:
+            nominative = self.db.formae['nom_sg'][1]
+            genitive = self.db.formae['gen_sg'][1]
+            populate_forms(self, nominative, genitive, sexus)
                 
-            praenomen = DeclineNoun(self.db.praenōmen,genitive,gender)
-            praenomen_forms = praenomen.make_paradigm()
-            self.db.formae['dat_sg'] = [praenomen_forms[2][1]]
-            self.db.formae['acc_sg'] = [praenomen_forms[3][1]]
-            self.db.formae['abl_sg'] = [praenomen_forms[4][1]]
-            self.db.formae['voc_sg'] = [praenomen_forms[5][1]]
-            self.db.formae['nom_pl'] = [praenomen_forms[6][1]]
-            self.db.formae['gen_pl'] = [praenomen_forms[7][1]]
-            self.db.formae['dat_pl'] = [praenomen_forms[8][1]]
-            self.db.formae['acc_pl'] = [praenomen_forms[9][1]]
-            self.db.formae['abl_pl'] = [praenomen_forms[10][1]]
-            self.db.formae['voc_pl'] = [praenomen_forms[11][1]]
-
-            # Add the variant forms to aliases for easy interaction
-            for form in praenomen_forms:
-                self.aliases.add(form[1])
-
-            nomen = self.db.nōmen
-            n_genitive = self.db.formae['gen_sg'][1]
-
-            word = DeclineNoun(nomen,n_genitive,gender)
-            forms = word.make_paradigm()
-            self.db.formae['dat_sg'].append(forms[2][1])
-            self.db.formae['acc_sg'].append(forms[3][1])
-            self.db.formae['abl_sg'].append(forms[4][1])
-            self.db.formae['voc_sg'].append(forms[5][1])
-            self.db.formae['nom_pl'].append(forms[6][1])
-            self.db.formae['gen_pl'].append(forms[7][1])
-            self.db.formae['dat_pl'].append(forms[8][1])
-            self.db.formae['acc_pl'].append(forms[9][1])
-            self.db.formae['abl_pl'].append(forms[10][1])
-            self.db.formae['voc_pl'].append(forms[11][1])
-
-            # Add the variant forms to aliases for easy interaction
-            for form in forms:
-                self.aliases.add(form[1])
-
-        # add all of the case endings to attributes
-
-        else:
-            word = DeclineNoun(self.db.formae['nom_sg'][0],self.db.formae['gen_sg'][0],self.db.gender)
-            forms = word.make_paradigm()
-            all_forms = forms
-            forms = forms[2:]
-            self.db.formae['dat_sg'] = [forms[0][1]]
-            self.db.formae['acc_sg'] = [forms[1][1]]
-            self.db.formae['abl_sg'] = [forms[2][1]]
-            self.db.formae['voc_sg'] = [forms[3][1]]
-            self.db.formae['nom_pl'] = [forms[4][1]]
-            self.db.formae['gen_pl'] = [forms[5][1]]
-            self.db.formae['dat_pl'] = [forms[6][1]]
-            self.db.formae['acc_pl'] = [forms[7][1]]
-            self.db.formae['abl_pl'] = [forms[8][1]]
-            self.db.formae['voc_pl'] = [forms[9][1]]
-
-            # Add the variant forms to aliases for easy interaction
-            for form in all_forms:
-                self.aliases.add(form[1])
-
         self.db.lang = 'latin'
 
         # assign handedness

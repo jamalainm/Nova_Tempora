@@ -5,16 +5,16 @@ Rooms are simple containers that has no location of their own.
 
 """
 
-# from evennia import DefaultRoom
-from evennia.contrib.ingame_python.typeclasses import EventRoom
+from evennia import DefaultRoom
+# from evennia.contrib.ingame_python.typeclasses import EventRoom
 from utils.latin.latin_declension import DeclineNoun
 from utils.latin.populate_forms import populate_forms
 from typeclasses.latin_noun import LatinNoun
 
 # Commenting out and changing inherit to EventRoom for ingame python
-# class Room(DefaultRoom):
-#
-class Room(EventRoom,LatinNoun):
+class Room(DefaultRoom,LatinNoun):
+# Trying to get building rooms to work; moving away from EventRoom
+# class Room(EventRoom,LatinNoun):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to

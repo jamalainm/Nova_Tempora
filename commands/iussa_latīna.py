@@ -401,15 +401,15 @@ class Relinque(MuxCommand):
 
         # Lighten the callers toll_fer['ferēns']
         target_mass = target.db.physical['mass']
-        current_carry -= target_mass
+        caller.db.toll_fer['ferēns'] -= target_mass
 
         # Move object to caller's location
         target.move_to(caller.location, quiet=True)
-        caller.msg(f"{obj.db.formae['acc_sg'][0]} relīquistī.")
-        caller.location.msg_contents(f"{caller.name} {obj.db.formae['acc_sg'][0]} relīquit.", exclude=caller)
+        caller.msg(f"{target.db.formae['acc_sg'][0]} relīquistī.")
+        caller.location.msg_contents(f"{caller.name} {target.db.formae['acc_sg'][0]} relīquit.", exclude=caller)
 
         # call the object script's at_drop() method.
-        obj.at_drop(caller)
+        target.at_drop(caller)
 
 class Da(MuxCommand):
     """

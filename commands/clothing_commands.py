@@ -55,7 +55,7 @@ class CmdWear(MuxCommand):
         wearstyle = True
         if not clothing:
             # JI (12/7/19) changing to Latin
-            self.caller.msg("Non in manibus habes.")
+            self.caller.msg("Nōn in manibus habēs.")
             return
         if not clothing.is_typeclass("typeclasses.latin_clothing.Clothing", exact=False):
             # JI (12/7/19) adapting to Latin
@@ -298,8 +298,8 @@ class CmdDrop(MuxCommand):
             self.args,
             location=caller,
             # JI (12/7/19) Adapting the following to Latin
-            nofound_string="Non habes.",
-            multimatch_string="Tot habes!",
+            nofound_string="Nōn habēs.",
+            multimatch_string="Tot habēs!",
         )
         if not obj:
             return
@@ -406,7 +406,7 @@ class CmdInventory(MuxCommand):
         """check inventory"""
         if not self.caller.contents:
             # JI (12/7/19) Adapted to Latin
-            self.caller.msg("Res neque habes neque geris.")
+            self.caller.msg("Tū rēs neque habēs neque geris.")
             return
 
         items = self.caller.contents

@@ -11,6 +11,7 @@ as a player character. Iussa are added to the LatinCmdSet
 from utils.latin.adjective_agreement import us_a_um
 from utils.latin.which_one import which_one
 from utils.latin.check_grammar import check_case
+from utils.latin.free_hands import free_hands
 
 from evennia import default_cmds
 from evennia import CmdSet
@@ -216,7 +217,7 @@ class Cape(MuxCommand):
         else:
             target.db.tenētur = caller.db.handedness
 
-class Relinque(Command):
+class Relinque(MuxCommand):
     """
     Get rid of something
     
@@ -232,47 +233,192 @@ class Relinque(Command):
     help_category = "Iussa Latīna"
     auto_help = True
 
-    def parse(self):
-
-        self.arglist = [arg.strip() for arg in self.args.split()]
-
     def func(self):
         """ Implement command """
 
         caller = self.caller
+        current_carry = caller.db.toll_fer['ferēns']
+        
         if not self.arglist or len(self.arglist) != 1:
             caller.msg("Quid relinquere velis?")
             return
 
         # Ensure the intended object is targeted
         stuff = caller.contents
-        obj, self.args = which_one(self.args, caller, stuff)
-        if not obj:
+        target, self.args = which_one(self.args, caller, stuff)
+        if not target:
             return
 
         # Check the grammar
-        if check_case(caller, obj, self.args, 'acc_sg') == False:
+        if check_case(caller, target, self.args, 'acc_sg') == False:
             return
 
         # Call the object's scripts at_before_drop() method
-        if not obj.at_before_drop(caller):
+        if not target.at_before_drop(caller):
             return
 
         # Adding the following to deal with clothing:
-        if obj.db.held:
-            obj.db.held = False
-        if obj.db.worn:
-            obj.remove(caller,quiet=True)
+        if target.db.tenētur:
+            target.db.tenētur = False
+        if target.db.geritur:
+            target.remove(caller,quiet=True)
+
+        # Lighten the callers toll_fer['ferēns']
+        target_mass = target.db.physical['mass']
+        current_carry -= target_mass
 
         # Move object to caller's location
-        obj.move_to(caller.location, quiet=True)
-        # The below is for when we have encumberance implemented
-#        caller.db.lift_carry['current'] -= obj.db.physical['mass']
+        target.move_to(caller.location, quiet=True)
         caller.msg(f"{obj.db.formae['acc_sg'][0]} relīquistī.")
         caller.location.msg_contents(f"{caller.name} {obj.db.formae['acc_sg'][0]} relīquit.", exclude=caller)
 
         # call the object script's at_drop() method.
         obj.at_drop(caller)
+
+class Da(MuxCommand):
+    """
+    give something to someone
+
+    Usage:
+        da <rem> <alicuī>
+        da <alicuī> <rem>
+
+    gives an item from your inventory to another character,
+    placing it in their inventory
+    """
+
+    key = "da"
+    locks = "cmd:all()"
+    help_category = "Iussa Latīna"
+    auto_help = True
+
+    def func(self):
+        """ implement give """
+
+        # Establish caller's status and encumberance
+        caller = self.caller
+        caller_carry = caller.db.toll_fer['ferēns']
+
+        # Ensure proper number of items in command
+        if len(self.arglist) != 2:
+            caller.msg("Scrībe: 'da <rem> <alicuī>' vel 'da <alicuī> <rem>'.")
+            return
+
+        # Ensure caller has possessions and that there are other characters present
+        possessions = caller.contents
+        if len(possessions) == 0:
+            caller.msg("Nihil habēs.")
+            return
+
+        things_in_room = caller.location.contents
+        potential_recipients = [r for r in things_in_room if r.typename == 'Character']
+        if len(potential_recipients) == 0:
+            caller.msg("Nēmō adest!")
+            return
+
+        everything = possessions + things_in_room
+
+        entity_1, arg1 = which_one(self.arglist[0], caller, everything)
+        if not entity_1:
+            return
+        entity_2, arg2 = which_one(self.arglist[1], caller, everything)
+        if not entity_2:
+            return
+
+        # Ensure that one of the entities is in possessions and one is in room
+
+        if entity_1 not in possessions and entity_2 not in possessions:
+            caller.msg("Quid dare voluistī?")
+            return
+
+        if entity_1 not in potential_recipients and entity_2 not in potential_recipients:
+            caller.msg("Cui dare voluistī?")
+            return
+
+        if entity_1 in possessions:
+            target = entity_1
+            target_arg = arg1
+            recipient = entity_2
+            recipient_arg = arg2
+        else:
+            target = entity_2
+            target_arg = arg2
+            recipient = entity_1
+            recipient_arg = arg1
+        
+        # Ensure caller referred to target in the accusative case:
+        if check_case(caller, target, target_arg, 'acc_sg') == False:
+            return
+
+        # Establish target object's status
+        target_mass = target.db.physical['mass']
+        target_acc_sg = target.db.formae['acc_sg'][0]
+
+        # If target is not currently held, does caller have a free hand?
+        if not target.db.tenētur:
+            hands, available_hands = free_hands(caller,possessions)
+            if available_hands < 1:
+                caller.msg("Manūs tuae sunt plēnae!")
+                return
+
+        # Ensure caller referred to recipient in the dative case
+        if check_case(caller, recipient, recipient_arg, 'dat_sg') == False:
+            return
+
+        # Ensure caller and recipient are not the same entity:
+        if recipient.key == caller.key:
+            caller.msg("Tū tibi aliquid dare nōn potes!")
+            return
+
+        # Establish recipient's status and encumberance
+        recipient_carry = recipient.db.toll_fer['ferēns']
+        recipient_max = recipient.db.toll_fer['max']
+        recipient_dat_sg = recipient.db.formae['dat_sg'][0]
+
+        recipient_possessions = recipient.contents
+        hands, available_hands = free_hands(recipient,recipient_possessions)
+
+        # If recipient's too weak, or if hands are full:
+        if available_hands < 1:
+            caller.msg(f"Manūs {recipient.db.formae['gen_sg'][0]} sunt plēnae!")
+            recipient.msg(f"{caller.key} tibi {target_acc_sg} dare conāt{us_a_um('nom_sg',caller.db.sexus)}, sed manūs tuae plēnae sunt.")
+            return
+
+        if recipient_carry + target_mass > recipient_max:
+            caller.msg(f"{recipient.key} tantum ponderis ferre nōn potest!")
+            recipient.msg(f"{caller.key} tibi {target_acc_sg} dare conāt{us_a_um('nom_sg',caller.db.sexus)}, sed tū tantum ponderis ferre nōn potes!")
+            return
+
+        # calling at_before_give hook method
+        if not target.at_before_give(caller, recipient):
+            return
+
+        # Commence the giving!
+
+        # if target is worn, take it off
+        if target.db.geritur:
+            target.remove(caller)
+#            caller.msg(f"{target_acc_sg} exuistī.")
+#            caller.location.msg_contents(f"{caller.key} {target_acc_sg} exuit.", exclude=caller)
+
+        target.move_to(recipient, quiet=True)
+        recipient.msg(f"{caller.key} tibi {target_acc_sg} dedit.")
+        caller.msg(f"{target_acc_sg} {recipient_dat_sg} dedistī.")
+        caller.location.msg_contents(
+                f"{caller.key} {target_acc_sg} {recipient_dat_sg} dedit.",
+                exclude=(caller,recipient)
+                )
+        
+        # Adjust mass born by giver and recipient
+        caller.db.toll_fer['ferēns'] -= target_mass
+        recipient.db.toll_fer['ferēns'] += target_mass
+
+        # Place it in recipient's hands
+        if available_hands > 1:
+            target.db.tenētur = recipient.db.handedness
+        else:
+            target.db.tenētur = hands[0]
+
 
 class IussaLatīnaCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -288,6 +434,7 @@ class IussaLatīnaCmdSet(default_cmds.CharacterCmdSet):
         super().at_cmdset_creation()
         self.add(Relinque())
         self.add(Cape())
+        self.add(Da())
 
 class IussaAdministrātōrumCmdSet(default_cmds.CharacterCmdSet):
     """

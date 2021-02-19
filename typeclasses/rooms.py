@@ -7,12 +7,12 @@ Rooms are simple containers that has no location of their own.
 
 from evennia import DefaultRoom
 # from evennia.contrib.ingame_python.typeclasses import EventRoom
-from utils.latin.latin_declension import DeclineNoun
-from utils.latin.populate_forms import populate_forms
-from typeclasses.latin_noun import LatinNoun
+# from utils.latin.latin_declension import DeclineNoun
+# from utils.latin.populate_forms import populate_forms
+# from typeclasses.latin_noun import LatinNoun
 
 # Commenting out and changing inherit to EventRoom for ingame python
-class Room(DefaultRoom,LatinNoun):
+class Room(DefaultRoom):
 # Trying to get building rooms to work; moving away from EventRoom
 # class Room(EventRoom,LatinNoun):
     """
@@ -25,14 +25,15 @@ class Room(DefaultRoom,LatinNoun):
     properties and methods available on all Objects.
     """
 
-    def at_object_creation(self):
-
-        # add all of the case endings to attributes
-
-        nom = self.db.formae['nom_sg'][0]
-        gen = self.db.formae['gen_sg'][0]
-        sexus = self.db.sexus
-
-        populate_forms(self, nom, gen, sexus)
-
-        self.db.lang = 'latin'
+    pass
+#    def at_object_creation(self):
+#
+#        # add all of the case endings to attributes
+#
+#        nom = self.db.formae['nom_sg'][0]
+#        gen = self.db.formae['gen_sg'][0]
+#        sexus = self.db.sexus
+#
+#        populate_forms(self, nom, gen, sexus)
+#
+#        self.db.lang = 'latin'

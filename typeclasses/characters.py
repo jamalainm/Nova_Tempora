@@ -9,7 +9,7 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-# from evennia import DefaultCharacter
+from evennia import DefaultCharacter
 from evennia import DefaultRoom, DefaultCharacter
 from utils.latin.latin_declension import DeclineNoun
 from typeclasses.latin_noun import LatinNoun
@@ -24,11 +24,11 @@ from typeclasses import latin_clothing
 # Adding so that some item is created with characters
 from evennia.utils.create import create_object
 # adding for combat
-from world.tb_basic import TBBasicCharacter
-from world.tb_basic import is_in_combat
+# from world.tb_basic import TBBasicCharacter
+# from world.tb_basic import is_in_combat
 import copy
 
-class Character(LatinNoun,TBBasicCharacter):
+class Character(LatinNoun,DefaultCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -149,30 +149,30 @@ class Character(LatinNoun,TBBasicCharacter):
 
 
     # For turn-based battle
-    def at_before_move(self, destination):
-        """
-        Called just before starting to move this object to
-        destination.
-
-        Args:
-            destination (Object): The object we are moving to
-
-        Returns:
-            shouldmove (bool): If we should move or not.
-
-        Notes:
-            If this method returns False/None, the move is cancelled
-            before it is even started.
-
-        """
-        # Keep the character from moving if at 0 HP or in combat.
-        if is_in_combat(self):
-            self.msg("Tibi pugnantī exīre nōn licet!")
-            return False  # Returning false keeps the character from moving.
-        if self.db.pv['nunc'] <= 0:
-            self.msg(f"Tibi vict{us_a_um('dat_sg',self.db.sexus)} versārī nōn licet!")
-            return False
-        return True
+#    def at_before_move(self, destination):
+#        """
+#        Called just before starting to move this object to
+#        destination.
+#
+#        Args:
+#            destination (Object): The object we are moving to
+#
+#        Returns:
+#            shouldmove (bool): If we should move or not.
+#
+#        Notes:
+#            If this method returns False/None, the move is cancelled
+#            before it is even started.
+#
+#        """
+#        # Keep the character from moving if at 0 HP or in combat.
+#        if is_in_combat(self):
+#            self.msg("Tibi pugnantī exīre nōn licet!")
+#            return False  # Returning false keeps the character from moving.
+#        if self.db.pv['nunc'] <= 0:
+#            self.msg(f"Tibi vict{us_a_um('dat_sg',self.db.sexus)} versārī nōn licet!")
+#            return False
+#        return True
 
 
     #making a new get_display_name that is aware of case and not
@@ -209,31 +209,29 @@ class Character(LatinNoun,TBBasicCharacter):
         """
         if not self.location:
             return
-
-        # changing {origin} to {exit}
-        string = msg or "{object} {exit} discessit." #, heading for {destination}."
+        if msg:
+            string = msg
+        else:
+            string = "{object} {exit} discēdit."
 
         # Get the exit from location to destination
         location = self.location
         exits = [
             o for o in location.contents if o.location is location and o.destination is destination
         ]
-        mapping = mapping or {}
-        mapping.update({"character": self})
+        if not mapping:
+            mapping = {}
 
-        if exits:
-            exits[0].callbacks.call(
-                "msg_leave", self, exits[0], location, destination, string, mapping
-            )
-            string = exits[0].callbacks.get_variable("message")
-            mapping = exits[0].callbacks.get_variable("mapping")
+        mapping.update(
+                {
+                    "object": self,
+                    "exit": exits[0] if exits else "somewhere",
+                    "origin": location or "nowhere",
+                    "destination": destination or "nowhere",
+                    }
+                )
 
-        # If there's no string, don't display anything
-        # It can happen if the "message" variable in events is set to None
-        if not string:
-            return
-
-        super().announce_move_from(destination, msg=string, mapping=mapping)
+        location.msg_contents(string, exclude=(self,), mapping=mapping)
 
     def announce_move_to(self, source_location, msg=None, mapping=None):
         """
@@ -258,46 +256,57 @@ class Character(LatinNoun,TBBasicCharacter):
         if not source_location and self.location.has_account:
             # This was created from nowhere and added to an account's
             # inventory; it's probably the result of a create command.
-            string = "In manibus tuīs %s nunc est." % self.get_display_name(self.location)
+            string = "You now have %s in your possession." % self.get_display_name(self.location)
             self.location.msg(string)
             return
 
-        # added the line below because
-        origin = source_location
-        # error checking
-        self.location.msg(source_location)
         if source_location:
-            origin = source_location.db.abl_sg[0]
-            string = msg or f"{self.key} ab {source_location.db.formae['abl_sg'][0]} venit."
+            if msg:
+                string = msg
+            else:
+                string = "{object} ad {ad_locum} ab {ab_loco} vēnit."
         else:
-            string = f"{character} venit."
+            string = "{object} ad {ad_locum} vēnit."
 
-        # adding '.db.abl_sg' to end of 'source_location' and moving from line below
-        # up into the 'if source_location' conditional
+        origin = source_location
         destination = self.location
         exits = []
-        mapping = mapping or {}
-        mapping.update({"character": self})
-
         if origin:
             exits = [
                 o
                 for o in destination.contents
                 if o.location is destination and o.destination is origin
             ]
-            if exits:
-                exits[0].callbacks.call(
-                    "msg_arrive", self, exits[0], origin, destination, string, mapping
-                )
-                string = exits[0].callbacks.get_variable("message")
-                mapping = exits[0].callbacks.get_variable("mapping")
 
-        # If there's no string, don't display anything
-        # It can happen if the "message" variable in events is set to None
-        if not string:
-            return
+        if not mapping:
+            mapping = {}
 
-        super().announce_move_to(source_location, msg=string, mapping=mapping)
+        # Implementing some Latin awareness
+        if source_location:
+            if source_location.db.formae:
+                ab_loco = source_location.db.formae['abl_sg'][0]
+            else:
+                ab_loco = source_location
+
+        if self.location.db.formae:
+            ad_locum = self.location.db.formae['acc_sg'][0]
+        else:
+            ad_locum = self.location
+
+        mapping.update(
+            {
+                "object": self,
+                "exit": exits[0] if exits else "somewhere",
+                "origin": origin or "nowhere",
+                "destination": destination or "nowhere",
+                "ab_loco": ab_loco,
+                "ad_locum": ad_locum,
+            }
+        )
+
+        destination.msg_contents(string, exclude=(self,), mapping=mapping)
+
+
     def return_appearance(self, looker, **kwargs):
         """
         # Lightly editing to change "You see" to "Ecce"
@@ -388,7 +397,7 @@ class Character(LatinNoun,TBBasicCharacter):
 #        target = self.location
 #        self.msg((self.at_look(target), {"type": "look"}), options=None)
 
-        if self.db.hp:
+        if self.db.pv:
             prompt = "\n|wVita: %i/%i) |n" % (self.db.pv['nunc'],self.db.pv['max'])
 
             self.msg(prompt)

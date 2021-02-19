@@ -21,9 +21,9 @@ from commands.command import Command
 
 # Adding in order to build new rooms in Latin
 from evennia.commands.default.building import ObjManipCommand
-from typeclasses.rooms import Room
+from typeclasses.locī import Locus
+from typeclasses.exitūs import Exitus
 from django.conf import settings
-from evennia.contrib.ingame_python.typeclasses import EventExit
 
 # Added in an attempt to get Dīc to work
 # from evennia.utils import utils
@@ -101,7 +101,7 @@ class Mūniātur(ObjManipCommand):
         caller.msg(f"Our location: {location.key}")
 
         # Create the new room
-        typeclass = settings.BASE_ROOM_TYPECLASS
+        typeclass = Locus
         new_room = create.create_object(
                 typeclass,
                 nominative,
@@ -140,7 +140,7 @@ class Mūniātur(ObjManipCommand):
 
         # Create exit to here
         if exit_to_here:
-            typeclass = settings.BASE_EXIT_TYPECLASS
+            typeclass = Exitus
             new_exit_to_here = create.create_object(
                     typeclass=typeclass,
                     key=exit_to_here,
@@ -157,7 +157,7 @@ class Mūniātur(ObjManipCommand):
 
         # Create exit to there
         if exit_to_there:
-            typeclass = settings.BASE_EXIT_TYPECLASS
+            typeclass = Exitus
             new_exit_to_there = create.create_object(
                     typeclass=typeclass,
                     key=exit_to_there,

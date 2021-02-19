@@ -249,3 +249,177 @@ class LatinNoun(DefaultObject):
 
         return string
 
+    # adjusting the 'at_before_say' and 'at_say' hooks for Latin
+    def at_before_say(self, message, **kwargs):
+        """
+        Before the object says something.
+
+        This hook is by default used by the 'say' and 'whisper'
+        commands as used by this command it is called before the text
+        is said/whispered and can be used to customize the outgoing
+        text from the object. Returning `None` aborts the command.
+
+        Args:
+            message (str): The suggested say/whisper text spoken by self.
+        Keyword Args:
+            whisper (bool): If True, this is a whisper rather than
+                a say. This is sent by the whisper command by default.
+                Other verbal commands could use this hook in similar
+                ways.
+            receivers (Object or iterable): If set, this is the target or targets for the say/whisper.
+
+        Returns:
+            message (str): The (possibly modified) text to be spoken.
+
+        """
+        return message
+
+    def at_say(
+        self,
+        message,
+        msg_self=None,
+        msg_location=None,
+        receivers=None,
+        msg_receivers=None,
+        **kwargs,
+    ):
+        """
+        Display the actual say (or whisper) of self.
+
+        This hook should display the actual say/whisper of the object in its
+        location.  It should both alert the object (self) and its
+        location that some text is spoken.  The overriding of messages or
+        `mapping` allows for simple customization of the hook without
+        re-writing it completely.
+
+        Args:
+            message (str): The message to convey.
+            msg_self (bool or str, optional): If boolean True, echo `message` to self. If a string,
+                return that message. If False or unset, don't echo to self.
+            msg_location (str, optional): The message to echo to self's location.
+            receivers (Object or iterable, optional): An eventual receiver or receivers of the message
+                (by default only used by whispers).
+            msg_receivers(str): Specific message to pass to the receiver(s). This will parsed
+                with the {receiver} placeholder replaced with the given receiver.
+        Keyword Args:
+            whisper (bool): If this is a whisper rather than a say. Kwargs
+                can be used by other verbal commands in a similar way.
+            mapping (dict): Pass an additional mapping to the message.
+
+        Notes:
+
+
+            Messages can contain {} markers. These are substituted against the values
+            passed in the `mapping` argument.
+
+                msg_self = 'You say: "{speech}"'
+                msg_location = '{object} says: "{speech}"'
+                msg_receivers = '{object} whispers: "{speech}"'
+
+            Supported markers by default:
+                {self}: text to self-reference with (default 'You')
+                {speech}: the text spoken/whispered by self.
+                {object}: the object speaking.
+                {receiver}: replaced with a single receiver only for strings meant for a specific
+                    receiver (otherwise 'None').
+                {all_receivers}: comma-separated list of all receivers,
+                                 if more than one, otherwise same as receiver
+                {location}: the location where object is.
+
+        """
+        msg_type = "say"
+        if kwargs.get("whisper", False):
+            # whisper mode
+            msg_type = "whisper"
+            msg_self = (
+                '{self} whisper to {all_receivers}, "|n{speech}|n"'
+                if msg_self is True
+                else msg_self
+            )
+            msg_receivers = msg_receivers or '{object} whispers: "|n{speech}|n"'
+            msg_location = None
+        else:
+            # split "message" into two parts if possible
+            two_part_speech = False
+            speech_list = message.split(' ')
+            speech_one = speech_list[0]
+            speech_two = ""
+            if len(speech_list) > 1:
+                speech_two = (' ').join(speech_list[1:])
+                two_part_speech = True
+
+            if two_part_speech:
+                msg_self = '"|n{speech_one}|n" inquis "|n{speech_two}|n"'
+                msg_location = '{object} "|n{speech_one}|n" inquit "|n{speech_two}|n"'
+                msg_receivers = '{object} tibi "|n{speech_one}|n" inquit "|n{speech_two}|n"'
+            else:
+                msg_self = '"|n{speech_one}|n" inquis.'
+                msg_location = '{object} "|n{speech_one}|n" inquit.'
+                msg_receivers = '{object} tibi "|n{speech_one}|n" inquit.'
+
+        custom_mapping = kwargs.get("mapping", {})
+        receivers = make_iter(receivers) if receivers else None
+        location = self.location
+
+        if msg_self:
+            self_mapping = {
+                "self": "You",
+                "object": self.get_display_name(self),
+                "location": location.get_display_name(self) if location else None,
+                "receiver": None,
+                "all_receivers": ", ".join(recv.get_display_name(self) for recv in receivers)
+                if receivers
+                else None,
+                "speech_one": speech_one,
+                "speech_two": speech_two,
+            }
+            self_mapping.update(custom_mapping)
+            self.msg(text=(msg_self.format(**self_mapping), {"type": msg_type}), from_obj=self)
+
+        if receivers and msg_receivers:
+            receiver_mapping = {
+                "self": "You",
+                "object": None,
+                "location": None,
+                "receiver": None,
+                "all_receivers": None,
+                "speech": message,
+            }
+            for receiver in make_iter(receivers):
+                individual_mapping = {
+                    "object": self.get_display_name(receiver),
+                    "location": location.get_display_name(receiver),
+                    "receiver": receiver.get_display_name(receiver),
+                    "all_receivers": ", ".join(recv.get_display_name(recv) for recv in receivers)
+                    if receivers
+                    else None,
+                }
+                receiver_mapping.update(individual_mapping)
+                receiver_mapping.update(custom_mapping)
+                receiver.msg(
+                    text=(msg_receivers.format(**receiver_mapping), {"type": msg_type}),
+                    from_obj=self,
+                )
+
+        if self.location and msg_location:
+            location_mapping = {
+                "self": "You",
+                "object": self,
+                "location": location,
+                "all_receivers": ", ".join(str(recv) for recv in receivers) if receivers else None,
+                "receiver": None,
+                "speech_one": speech_one,
+                "speech_two": speech_two,
+            }
+            location_mapping.update(custom_mapping)
+            exclude = []
+            if msg_self:
+                exclude.append(self)
+            if receivers:
+                exclude.extend(receivers)
+            self.location.msg_contents(
+                text=(msg_location, {"type": msg_type}),
+                from_obj=self,
+                exclude=exclude,
+                mapping=location_mapping,
+            )

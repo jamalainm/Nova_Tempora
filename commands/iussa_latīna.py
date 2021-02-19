@@ -7,7 +7,6 @@ Iussa Latīna describe the input the account can do to the game
 as a player character. Iussa are added to the LatinCmdSet
 
 """
-
 from utils.latin.adjective_agreement import us_a_um
 from utils.latin.which_one import which_one
 from utils.latin.check_grammar import check_case
@@ -19,6 +18,19 @@ from evennia.utils import create
 from evennia.commands.default import muxcommand
 
 from commands.command import Command
+
+# Adding in order to build new rooms in Latin
+from evennia.commands.default.building import ObjManipCommand
+from typeclasses.rooms import Room
+from django.conf import settings
+from evennia.contrib.ingame_python.typeclasses import EventExit
+
+# Added in an attempt to get Dīc to work
+# from evennia.utils import utils
+# COMMAND_DEFAULT_CLASS = utils.class_from_module(settings.COMMAND_DEFAULT_CLASS)
+# __all__ = (
+#         "CmdSay",
+#         )
 
 class MuxCommand(muxcommand.MuxCommand):
     """
@@ -37,6 +49,129 @@ class MuxCommand(muxcommand.MuxCommand):
 
             caller.msg(prompt)
 
+class Mūniātur(ObjManipCommand):
+    """
+    Build a Latin Room
+
+    Usage:
+        mūniātur <room name>, <room genitive>, <room gender> = <exit to here>, <exit to there>
+
+    """
+
+    key = "mūniātur"
+    aliases = ['muniatur']
+    locks = "cmd:perm(dig) or perm(Builder)"
+    help_category = "Iussa Administrātōrum"
+    auto_help = True
+
+    # Lockstring of newly created rooms, for easy overloading.
+    # Will be formatted with the (id) of the creating object.
+    new_room_lockstring = (
+            "control:id({id}) or perm(Admin); "
+            "delete:id({id}) or perm(Admin); "
+            "edit:id({id}) or perm(Admin)"
+            )
+
+    def func(self):
+        """ Do the building """
+
+        caller = self.caller
+
+        if not self.lhslist or len(self.lhslist) != 3:
+            caller.msg("Scrībe: mūniātur <room>, <gen>, <sexus> [= <hūc>, <illūc>]")
+            return
+
+        location = caller.location
+        nominative = self.lhslist[0]
+        genitive = self.lhslist[1]
+        sexus = self.lhslist[2]
+
+        # Make sure a proper gender is accepted
+        sexus = self.arglist[2]
+        if sexus not in ['māre','muliebre','neutrum']:
+            caller.msg("Estne sexus 'māre' an 'muliebre' an 'neutrum'?")
+            return
+
+        # Make sure an acceptable genitive is submitted
+        if not genitive.endswith('ae') and not genitive.endswith('ī') and not genitive.endswith('is') and not genitive.endswith('ūs') and not genitive.endswith('um'):
+            caller.msg("Eheu, ista forma cāsūs genitīvī nōn est accipienda.")
+            return
+
+        # Testing
+        caller.msg(f"Our location: {location.key}")
+
+        # Create the new room
+        typeclass = settings.BASE_ROOM_TYPECLASS
+        new_room = create.create_object(
+                typeclass,
+                nominative,
+                attributes=[
+                    ("formae",{"nom_sg":[nominative],"gen_sg":[genitive]}),
+                    ("sexus",sexus),
+                    ],
+                    report_to=caller,
+                )
+        lockstring = self.new_room_lockstring.format(id=caller.id)
+        new_room.locks.add(lockstring)
+        alias_string = ""
+        if new_room.aliases.all():
+            alias_string = " (%s)" % ", ".join(new_room.aliases.all())
+        room_string = f"Created room {new_room.key}({new_room.dbref}), {genitive} of type {new_room.typename}"
+        caller.msg(room_string)
+
+        # Check to see if exits should be created
+        if self.rhslist:
+            if self.rhslist[0] == '-':
+                exit_to_here = False
+            else:
+                exit_to_here = self.rhslist[0]
+            if self.rhslist[1]:
+                if self.rhslist[1] == '-':
+                    exit_to_there = False
+                else:
+                    exit_to_there = self.rhslist[1]
+
+        else:
+            if location.db.lang == 'latin':
+                exit_to_here = f"ad {location.db.formae['acc_sg'][0]}"
+            else:
+                exit_to_here = f"ad {location.key}"
+            exit_to_there = f"ad {new_room.db.formae['acc_sg'][0]}"
+
+        # Create exit to here
+        if exit_to_here:
+            typeclass = settings.BASE_EXIT_TYPECLASS
+            new_exit_to_here = create.create_object(
+                    typeclass=typeclass,
+                    key=exit_to_here,
+                    location=new_room,
+                    locks = lockstring,
+                    destination = location,
+                    report_to = caller,
+                    )
+            alias_string = ""
+            if new_exit_to_here.aliases.all():
+                alias_string = " (%s)" % ", ".join(new_exit_to_here.aliases.all())
+            exit_to_here_string = f"\nCreated exit from {new_room.name} to {location.name}: {exit_to_here}({new_exit_to_here.dbref}) {alias_string}"
+            caller.msg(exit_to_here_string)
+
+        # Create exit to there
+        if exit_to_there:
+            typeclass = settings.BASE_EXIT_TYPECLASS
+            new_exit_to_there = create.create_object(
+                    typeclass=typeclass,
+                    key=exit_to_there,
+                    location=location,
+                    locks = lockstring,
+                    destination = new_room,
+                    report_to = caller
+                    )
+            alias_string = ""
+            if new_exit_to_there.aliases.all():
+                alias_string = " (%s)" % ", ".join(new_exit_to_there.aleases.all())
+            exit_to_there_string = f"\nCreated exit from {location.name} to {new_room.name}: {exit_to_there}({new_exit_to_there.dbref}) {alias_string}"
+            caller.msg(exit_to_there_string)
+
 class Creātur(Command):
     """
     Create an object with grammatical gender, a nominative singular,
@@ -48,6 +183,7 @@ class Creātur(Command):
     """
 
     key = "creātur"
+    aliases = ['creatur']
     locks = "cmd:perm(Builders)"
     help_category = "Iussa Administrātōrum"
     auto_help = True
@@ -419,6 +555,42 @@ class Da(MuxCommand):
         else:
             target.db.tenētur = hands[0]
 
+class Dīc(MuxCommand):
+    """
+    Speak as your character
+
+    Usage:
+        dīc <message>
+
+    Talk to those in your current location
+    """
+
+    key = "dīc"
+    aliases = ['dic']
+    locks = "cmd:all()"
+    help_category = "Iussa Latīna"
+    auto_help = True
+
+    def func(self):
+        """ run the say command """
+
+        caller = self.caller
+
+        if not self.args:
+            caller.msg("Quid dīcere velis?")
+            return
+
+        speech = self.args
+
+        # Calling the at_before_say hook on the character
+        speech = caller.at_before_say(speech)
+
+        # If speech is empty, stop here
+        if not speech:
+            return
+
+        # Call the at_after_say hook on the character
+        caller.at_say(speech, msg_self=True)
 
 class IussaLatīnaCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -435,6 +607,7 @@ class IussaLatīnaCmdSet(default_cmds.CharacterCmdSet):
         self.add(Relinque())
         self.add(Cape())
         self.add(Da())
+        self.add(Dīc())
 
 class IussaAdministrātōrumCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -449,3 +622,4 @@ class IussaAdministrātōrumCmdSet(default_cmds.CharacterCmdSet):
         """
         super().at_cmdset_creation()
         self.add(Creātur())
+        self.add(Mūniātur())

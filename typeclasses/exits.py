@@ -8,6 +8,7 @@ for allowing Characters to traverse the exit to its destination.
 """
 # from evennia import DefaultExit
 from evennia.contrib.ingame_python.typeclasses import EventExit
+# from utils.latin.populate_forms import populate_forms
 
 # Commenting out and changing inherit to EventExit for ingame python
 # class Exit(DefaultExit):
@@ -38,6 +39,6 @@ class Exit(EventExit):
                                         defined, in which case that will simply be echoed.
     """
     def at_object_creation(self):
-        self.db.formae['acc_sg'] = [self.key]
+        self.db.formae = {'acc_sg':[self.key]}
         self.db.desc = self.destination
 

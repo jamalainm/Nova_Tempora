@@ -245,6 +245,40 @@ class Rēs(InflectedNoun):
             self.aliases.add(singular, category="plural_key")
         return singular, plural
 
+    def at_look(self, target, **kwargs):
+        """
+        Called when this object performs a look. It allows to
+        customize just what this means. It will not itself
+        send any data.
+
+        Args:
+            target (Object): The target being looked at. This is
+                commonly an object or the current location. It will
+                be checked for the "view" type access.
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call. This will be passed into
+                return_appearance, get_display_name and at_desc but is not used
+                by default.
+
+        Returns:
+            lookstring (str): A ready-processed look string
+                potentially ready to return to the looker.
+
+        """
+        if not target.access(self, "view"):
+            try:
+                return "Could not view '%s'." % target.get_display_name(self, **kwargs)
+            except AttributeError:
+                return "Could not view '%s'." % target.key
+
+        description = target.return_appearance(self, **kwargs)
+
+        # the target's at_desc() method.
+        # this must be the last reference to target so it may delete itself when acted on.
+        target.at_desc(looker=self, **kwargs)
+
+        return description
+
     def return_appearance(self, looker, **kwargs):
         """ Adapting to Latin grammar """
 
@@ -257,6 +291,7 @@ class Rēs(InflectedNoun):
             **kwargs (dict): Arbitrary, optional arguments for users
                 overriding the call (unused by default)
         """
+        
 
         if not looker:
             return ""
@@ -315,11 +350,11 @@ class Rēs(InflectedNoun):
                             f"|y(ard{'ēns' if possession.db.sexus == 'neutrum' else 'entem'})|n {possession.db.formae['acc_sg'][0]}"
                             )
                 else:
-                    held_list.append(possession.db.key)
+                    held_list.append(possession.db.formae['acc_sg'][0])
 
         # Compile text of what looker sees
         if desc:
-            string += desc
+            string += "%s" % desc
 
         # Append held items
         if held_list:
@@ -331,6 +366,21 @@ class Rēs(InflectedNoun):
         else:
             string += f"|/|/{self} nūd{us_a_um('nom_sg',self.db.sexus)} est!"
 
+        if users or things:
+            # handle pluralization of things (never pluralize users)
+            thing_strings = []
+            for key, itemlist in sorted(things.items()):
+                nitem = len(itemlist)
+                if nitem == 1:
+                    key, _ = itemlist[0].get_numbered_name(nitem, looker, key=key)
+                    if itemlist[0].db.ardēns:
+                        key = "|y(ardēns)|n " + key
+                else:
+                    key = [item.get_numbered_name(nitem, looker, key=key)[1] for item in itemlist][
+                        0
+                    ]
+                thing_strings.append(key)
+        
         if exits:
             # Changing this string so that exits appear green
             # string += "\n|wAd hos locos potes ire:|n\n " + LatinNoun.list_to_string(exits)
@@ -339,21 +389,6 @@ class Rēs(InflectedNoun):
                 colorful_exits.append(f"|lc{exit}|lt|g{exit}|n|le")
             colorful_exits = sorted(colorful_exits)
             string += "\n|wAd hōs locōs potes īre:|n\n " + list_to_string(colorful_exits)
-        if users or things:
-            self.msg("Sorting through things.")
-            # handle pluralization of things (never pluralize users)
-            thing_strings = []
-            for key, itemlist in sorted(things.items()):
-                nitem = len(itemlist)
-                if nitem == 1:
-                    key, _ = itemlist[0].get_numbered_name(nitem, looker, key=key)
-                    if itemlist[0].db.is_burning:
-                        key = "|y(ardēns)|n " + key
-                else:
-                    key = [item.get_numbered_name(nitem, looker, key=key)[1] for item in itemlist][
-                        0
-                    ]
-                thing_strings.append(key)
 
             string += "\n|wEcce:|n\n " + list_to_string(users + thing_strings)
 

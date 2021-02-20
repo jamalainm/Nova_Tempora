@@ -9,9 +9,9 @@ from evennia import DefaultRoom
 from utils.latin.latin_declension import DeclineNoun
 from utils.latin.populate_forms import populate_forms
 #from typeclasses.latin_noun import LatinNoun
-from typeclasses.inflected_noun import InflectedNoun
+from typeclasses.rēs import Rēs
 
-class Locus(DefaultRoom,InflectedNoun):
+class Locus(DefaultRoom,Rēs):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -22,14 +22,16 @@ class Locus(DefaultRoom,InflectedNoun):
     properties and methods available on all Objects.
     """
 
-    def at_object_creation(self):
+    pass
 
-        # add all of the case endings to attributes
-
-        nom = self.db.formae['nom_sg'][0]
-        gen = self.db.formae['gen_sg'][0]
-        sexus = self.db.sexus
-
-        populate_forms(self, nom, gen, sexus)
-
-        self.db.lang = 'latin'
+#    def at_object_creation(self):
+#
+#        # add all of the case endings to attributes
+#
+#        nom = self.db.formae['nom_sg'][0]
+#        gen = self.db.formae['gen_sg'][0]
+#        sexus = self.db.sexus
+#
+#        populate_forms(self, nom, gen, sexus)
+#
+#        self.db.lang = 'latin'

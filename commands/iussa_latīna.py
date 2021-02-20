@@ -10,7 +10,7 @@ as a player character. Iussa are added to the LatinCmdSet
 from utils.latin.adjective_agreement import us_a_um
 from utils.latin.which_one import which_one
 from utils.latin.check_grammar import check_case
-from utils.latin.free_hands import free_hands
+from utils.latin.free_hands import free_hands, put_into_hand, take_out_of_hand
 
 from evennia import default_cmds
 from evennia import CmdSet
@@ -348,22 +348,27 @@ class Cape(MuxCommand):
                 caller.msg(f"Tū {target.db.formae['acc_sg'][0]} capere nōn potes.")
                 return
 
-        # Check to see if hands are free
-
-        possessions = caller.contents
-        hands = ['sinistrā','dextrā']
-        full_hands = 0
-        held_items = []
-        for possession in possessions:
-            if possession.db.tenētur:
-                if possession.db.tenētur in hands:
-                    full_hands += 1
-                    held_items.append(possession)
-                elif held == 'ambābus':
-                    full_hands += 2
-                    held_items.append(possession)
-
-        if full_hands >= 2:
+#        # Check to see if hands are free
+#
+#        possessions = caller.contents
+#        hands = ['sinistrā','dextrā']
+#        full_hands = 0
+#        held_items = []
+#        for possession in possessions:
+#            if possession.db.tenētur:
+#                if possession.db.tenētur in hands:
+#                    full_hands += 1
+#                    held_items.append(possession)
+#                elif held == 'ambābus':
+#                    full_hands += 2
+#                    held_items.append(possession)
+#
+#        if full_hands >= 2:
+#            caller.msg("Manūs tuae sunt plēnae!"
+#            return
+#
+#       This should be a much simpler check of free hands
+        if len(caller.db.manibus_plēnīs) >= 2:
             caller.msg("Manūs tuae sunt plēnae!")
             return
 
@@ -390,15 +395,20 @@ class Cape(MuxCommand):
                 exclude=caller
                 )
 
+#        # Put the target in a hand; dominant if not already full
+#        if held_items:
+#            hands.remove(held_items[0].db.tenētur)
+#            target.db.tenētur = hands[0]
+#        else:
+#            target.db.tenētur = caller.db.handedness
+#
+#       This will both indicate that a hand is holding something and that
+#       target is held by that hand, preferring dominant hand
+        put_into_hand(caller, target)
+
         # calling at_get hook method
         target.at_get(caller)
 
-        # Put the target in a hand; dominant if not already full
-        if held_items:
-            hands.remove(held_items[0].db.tenētur)
-            target.db.tenētur = hands[0]
-        else:
-            target.db.tenētur = caller.db.handedness
 
 class Relinque(MuxCommand):
     """
@@ -442,7 +452,9 @@ class Relinque(MuxCommand):
 
         # Adding the following to deal with clothing:
         if target.db.tenētur:
-            target.db.tenētur = False
+#            target.db.tenētur = False
+            # New helper function to manage occupied hands
+            take_out_of_hand(caller,target)
         if target.db.geritur:
             target.remove(caller,quiet=True)
 
@@ -537,10 +549,16 @@ class Da(MuxCommand):
         target_mass = target.db.physical['mass']
         target_acc_sg = target.db.formae['acc_sg'][0]
 
-        # If target is not currently held, does caller have a free hand?
+#        # If target is not currently held, does caller have a free hand?
+#        if not target.db.tenētur:
+#            hands, available_hands = free_hands(caller,possessions)
+#            if available_hands < 1:
+#                caller.msg("Manūs tuae sunt plēnae!")
+#                return
+#
+        # This should be a simpler check for full hands
         if not target.db.tenētur:
-            hands, available_hands = free_hands(caller,possessions)
-            if available_hands < 1:
+            if len(caller.db.manibus_plēnīs) >= 2:
                 caller.msg("Manūs tuae sunt plēnae!")
                 return
 
@@ -559,10 +577,9 @@ class Da(MuxCommand):
         recipient_dat_sg = recipient.db.formae['dat_sg'][0]
 
         recipient_possessions = recipient.contents
-        hands, available_hands = free_hands(recipient,recipient_possessions)
 
         # If recipient's too weak, or if hands are full:
-        if available_hands < 1:
+        if len(recipient.db.manibus_plēnīs) >= 2:
             caller.msg(f"Manūs {recipient.db.formae['gen_sg'][0]} sunt plēnae!")
             recipient.msg(f"{caller.key} tibi {target_acc_sg} dare conāt{us_a_um('nom_sg',caller.db.sexus)}, sed manūs tuae plēnae sunt.")
             return
@@ -583,6 +600,8 @@ class Da(MuxCommand):
             target.remove(caller)
 #            caller.msg(f"{target_acc_sg} exuistī.")
 #            caller.location.msg_contents(f"{caller.key} {target_acc_sg} exuit.", exclude=caller)
+        take_out_of_hand(caller, target)
+        put_into_hand(recipient, target)
 
         target.move_to(recipient, quiet=True)
         recipient.msg(f"{caller.key} tibi {target_acc_sg} dedit.")
@@ -597,10 +616,10 @@ class Da(MuxCommand):
         recipient.db.toll_fer['ferēns'] += target_mass
 
         # Place it in recipient's hands
-        if available_hands > 1:
-            target.db.tenētur = recipient.db.handedness
-        else:
-            target.db.tenētur = hands[0]
+#        if available_hands > 1:
+#            target.db.tenētur = recipient.db.handedness
+#        else:
+#            target.db.tenētur = hands[0]
 
 class Dīc(MuxCommand):
     """

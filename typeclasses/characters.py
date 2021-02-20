@@ -90,10 +90,10 @@ class Character(Rēs,DefaultCharacter):
         else:
             self.db.handedness = 'dextrā'
 
-        # set hands as empty
+        # set 'manūs plēnae' and 'manūs vacuae'
 
-        self.db.right_hand = False
-        self.db.left_hand = False
+        self.db.manibus_plēnīs = []
+        self.db.manibus_vacuīs = ['dextrā','sinistrā']
 
         # Experiment with stats
 

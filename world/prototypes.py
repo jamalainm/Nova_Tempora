@@ -38,8 +38,8 @@ See the `@spawn` command and `evennia.utils.spawner` for more info.
 """
 BAG = {
         "key":"saccus",
-        "typeclass":"typeclasses.latin_clothing.Clothing",
-        "formae": {"nom_sg":["saccus"],"gen_sg":["sacci"]},
+        "typeclass":"typeclasses.vestīmenta.Vestīmentum",
+        "formae": {"nom_sg":["saccus"],"gen_sg":["saccī"]},
         "sexus":"māre",
         "desc":"A bag",
         "genus_vestīmentōrum":"back",
@@ -49,8 +49,8 @@ BAG = {
         }
 BANDEAU = {
         "key":"strophium",
-        "typeclass":"typeclasses.latin_clothing.Clothing",
-        "formae":{"nom_sg":["strophium"],"gen_sg":["strophii"]},
+        "typeclass":"typeclasses.vestīmenta.Vestīmentum",
+        "formae":{"nom_sg":["strophium"],"gen_sg":["strophiī"]},
         "sexus":"neutrum",
         "desc":"A bandeau",
         "genus_vestīmentōrum":"undershirt",
@@ -59,7 +59,7 @@ BANDEAU = {
 
 UNDERWEAR = {
         "key":"subligāculum",
-        "typeclass":"typeclasses.latin_clothing.Clothing",
+        "typeclass":"typeclasses.vestīmenta.Vestīmentum",
         "formae":{"nom_sg":["subligāculum"],"gen_sg":["subligāculī"]},
         "sexus":"neutrum",
         "desc":"Briefs",
@@ -87,7 +87,7 @@ WOOL = {
         }
 CLOAK = {
         "key":"pallium",
-        "typeclass":"typeclasses.latin_clothing.Clothing",
+        "typeclass":"typeclasses.vestīmenta.Vestīmentum",
         "genus_vestīmentōrum":"cloak",
         "formae":{"nom_sg":["pallium"],"gen_sg":["palliī"]},
         "sexus":"neutrum",
@@ -96,7 +96,7 @@ CLOAK = {
         }
 HAT = {
         "key":"petasus",
-        "typeclass": "typeclasses.latin_clothing.Clothing",
+        "typeclass": "typeclasses.vestīmenta.Vestīmentum",
         "genus_vestīmentōrum":"hat",
         "formae":{"nom_sg":["petasus"],"gen_sg":["petasī"]},
         "sexus":"māre",
@@ -106,7 +106,7 @@ HAT = {
 
 SANDALS = {
         "key":"soleae",
-        "typeclass":"typeclasses.latin_clothing.Clothing",
+        "typeclass":"typeclasses.vestīmenta.Vestīmentum",
         "genus_vestīmentōrum":"shoes",
         "formae":{"nom_sg":["soleae"],"gen_sg":["soleārum"]},
         "sexus":"muliebre",
@@ -116,7 +116,7 @@ SANDALS = {
 
 TUNIC = {
         "key":"tunica",
-        "typeclass":"typeclasses.latin_clothing.Clothing",
+        "typeclass":"typeclasses.vestīmenta.Vestīmentum",
         "genus_vestīmentōrum":"fullbody",
         "formae":{"nom_sg":["tunica"],"gen_sg":["tunicae"]},
         "sexus":"muliebre",

@@ -10,17 +10,16 @@ creation commands.
 
 """
 from evennia import DefaultCharacter
-from evennia import DefaultRoom, DefaultCharacter
-from utils.latin.latin_declension import DeclineNoun
-from typeclasses.latin_noun import LatinNoun
+from typeclasses.rēs import Rēs
 from utils.latin.adjective_agreement import us_a_um
 from utils.latin.populate_forms import populate_forms
+from utils.latin.latin_declension import DeclineNoun
 
 # added to assign handedness
 import random
 
 # Adding next couple of lines to accommodate clothing
-from typeclasses import latin_clothing
+# from typeclasses import latin_clothing
 # Adding so that some item is created with characters
 from evennia.utils.create import create_object
 # adding for combat
@@ -28,7 +27,7 @@ from evennia.utils.create import create_object
 # from world.tb_basic import is_in_combat
 import copy
 
-class Character(LatinNoun,DefaultCharacter):
+class Character(Rēs,DefaultCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -61,9 +60,26 @@ class Character(LatinNoun,DefaultCharacter):
 
         # If there is a nōmen, decline it, also
         if self.db.nōmen:
-            nominative = self.db.formae['nom_sg'][1]
-            genitive = self.db.formae['gen_sg'][1]
-            populate_forms(self, nominative, genitive, sexus)
+            nom = self.db.formae['nom_sg'][1]
+            gen = self.db.formae['gen_sg'][1]
+            word = DeclineNoun(nom,gen,sexus)
+            forms = word.make_paradigm()
+            all_forms = forms
+            forms = forms[2:]
+            self.db.formae['dat_sg'].append(forms[0][1])
+            self.db.formae['acc_sg'].append(forms[1][1])
+            self.db.formae['abl_sg'].append(forms[2][1])
+            self.db.formae['voc_sg'].append(forms[3][1])
+            self.db.formae['nom_pl'].append(forms[4][1])
+            self.db.formae['gen_pl'].append(forms[5][1])
+            self.db.formae['dat_pl'].append(forms[6][1])
+            self.db.formae['acc_pl'].append(forms[7][1])
+            self.db.formae['abl_pl'].append(forms[8][1])
+            self.db.formae['voc_pl'].append(forms[9][1])
+
+            for form in all_forms:
+                self.aliases.add(form[1])
+
                 
         self.db.lang = 'latin'
 
@@ -113,7 +129,7 @@ class Character(LatinNoun,DefaultCharacter):
 
         # Add the following so players start with clothes
         underwear = create_object(
-                typeclass = "typeclasses.latin_clothing.Clothing",
+                typeclass = "typeclasses.vestīmenta.Vestīmentum",
                 key = "subligāculum",
                 location = self.dbref,
                 attributes=[
@@ -128,7 +144,7 @@ class Character(LatinNoun,DefaultCharacter):
 
         if self.db.sexus == 'muliebre':
             bandeau = create_object(
-                    typeclass = "typeclasses.latin_clothing.Clothing",
+                    typeclass = "typeclasses.vestīmenta.Vestīmentum",
                     key = "strophium",
                     location = self.dbref,
                     attributes=[
@@ -173,231 +189,223 @@ class Character(LatinNoun,DefaultCharacter):
 #            self.msg(f"Tibi vict{us_a_um('dat_sg',self.db.sexus)} versārī nōn licet!")
 #            return False
 #        return True
-
-
-    #making a new get_display_name that is aware of case and not
-    # dependent on the key of the object
-    def get_display_name(self, looker, **kwargs):
-        if not self.db.formae:
-            if self.locks.check_lockstring(looker, "perm(Builder)"):
-                return "{}(#{})".format(self.key, self.id)
-            return self.key
-        else:
-            if self.locks.check_lockstring(looker, "perm(Builder)"):
-                return "{}(#{})".format(self.key, self.id)
-            return self.key
-
-    def announce_move_from(self, destination, msg=None, mapping=None):
-        """
-        Called if the move is to be announced. This is
-        called while we are still standing in the old
-        location.
-
-        Args:
-            destination (Object): The place we are going to.
-            msg (str, optional): a replacement message.
-            mapping (dict, optional): additional mapping objects.
-
-        You can override this method and call its parent with a
-        message to simply change the default message.  In the string,
-        you can use the following as mappings (between braces):
-            object: the object which is moving.
-            exit: the exit from which the object is moving (if found).
-            origin: the location of the object before the move.
-            destination: the location of the object after moving.
-
-        """
-        if not self.location:
-            return
-        if msg:
-            string = msg
-        else:
-            string = "{object} {exit} discēdit."
-
-        # Get the exit from location to destination
-        location = self.location
-        exits = [
-            o for o in location.contents if o.location is location and o.destination is destination
-        ]
-        if not mapping:
-            mapping = {}
-
-        mapping.update(
-                {
-                    "object": self,
-                    "exit": exits[0] if exits else "somewhere",
-                    "origin": location or "nowhere",
-                    "destination": destination or "nowhere",
-                    }
-                )
-
-        location.msg_contents(string, exclude=(self,), mapping=mapping)
-
-    def announce_move_to(self, source_location, msg=None, mapping=None):
-        """
-        Called after the move if the move was not quiet. At this point
-        we are standing in the new location.
-
-        Args:
-            source_location (Object): The place we came from
-            msg (str, optional): the replacement message if location.
-            mapping (dict, optional): additional mapping objects.
-
-        You can override this method and call its parent with a
-        message to simply change the default message.  In the string,
-        you can use the following as mappings (between braces):
-            object: the object which is moving.
-            exit: the exit from which the object is moving (if found).
-            origin: the location of the object before the move.
-            destination: the location of the object after moving.
-
-        """
-
-        if not source_location and self.location.has_account:
-            # This was created from nowhere and added to an account's
-            # inventory; it's probably the result of a create command.
-            string = "You now have %s in your possession." % self.get_display_name(self.location)
-            self.location.msg(string)
-            return
-
-        if source_location:
-            if msg:
-                string = msg
-            else:
-                string = "{object} ad {ad_locum} ab {ab_loco} vēnit."
-        else:
-            string = "{object} ad {ad_locum} vēnit."
-
-        origin = source_location
-        destination = self.location
-        exits = []
-        if origin:
-            exits = [
-                o
-                for o in destination.contents
-                if o.location is destination and o.destination is origin
-            ]
-
-        if not mapping:
-            mapping = {}
-
-        # Implementing some Latin awareness
-        if source_location:
-            if source_location.db.formae:
-                ab_loco = source_location.db.formae['abl_sg'][0]
-            else:
-                ab_loco = source_location
-
-        if self.location.db.formae:
-            ad_locum = self.location.db.formae['acc_sg'][0]
-        else:
-            ad_locum = self.location
-
-        mapping.update(
-            {
-                "object": self,
-                "exit": exits[0] if exits else "somewhere",
-                "origin": origin or "nowhere",
-                "destination": destination or "nowhere",
-                "ab_loco": ab_loco,
-                "ad_locum": ad_locum,
-            }
-        )
-
-        destination.msg_contents(string, exclude=(self,), mapping=mapping)
-
-
-    def return_appearance(self, looker, **kwargs):
-        """
-        # Lightly editing to change "You see" to "Ecce"
-        # and 'Exits' to 'Ad hos locos ire potes:'
-        This formats a description. It is the hook a 'look' command
-        should call.
-
-        Args:
-            looker (Object): Object doing the looking.
-            **kwargs (dict): Arbitrary, optional arguments for users
-                overriding the call (unused by default).
-        """
-
-
-        if not looker:
-            return ""
-        # get and identify all objects
-        # JI (12/7/19) Commenting out the following which probably shouldn't apply to characters.
-#        visible = (con for con in self.contents if con != looker and con.access(looker, "view"))
-#        exits, users, things = [], [], defaultdict(list)
-#        for con in visible:
-#            key = con.get_display_name(looker)
-#            if con.destination:
-#                exits.append(key)
-#            elif con.has_account:
-#                users.append("|c%s|n" % key)
+#
+# Added the following to typeclasses.rēs.Rēs to consolidate
+#
+#
+#    #making a new get_display_name that is aware of case and not
+#    # dependent on the key of the object
+#    def get_display_name(self, looker, **kwargs):
+#        if not self.db.formae:
+#            if self.locks.check_lockstring(looker, "perm(Builder)"):
+#                return "{}(#{})".format(self.key, self.id)
+#            return self.key
+#        else:
+#            if self.locks.check_lockstring(looker, "perm(Builder)"):
+#                return "{}(#{})".format(self.key, self.id)
+#            return self.key
+#
+# Adding the following move function to typeclasses.rēs.Rēs in order to consolodite
+#
+#    def announce_move_from(self, destination, msg=None, mapping=None):
+#        """
+#        Called if the move is to be announced. This is
+#        called while we are still standing in the old
+#        location.
+#
+#        Args:
+#            destination (Object): The place we are going to.
+#            msg (str, optional): a replacement message.
+#            mapping (dict, optional): additional mapping objects.
+#
+#        You can override this method and call its parent with a
+#        message to simply change the default message.  In the string,
+#        you can use the following as mappings (between braces):
+#            object: the object which is moving.
+#            exit: the exit from which the object is moving (if found).
+#            origin: the location of the object before the move.
+#            destination: the location of the object after moving.
+#
+#        """
+#        if not self.location:
+#            return
+#        if msg:
+#            string = msg
+#        else:
+#            string = "{object} {exit} discēdit."
+#
+#        # Get the exit from location to destination
+#        location = self.location
+#        exits = [
+#            o for o in location.contents if o.location is location and o.destination is destination
+#        ]
+#        if not mapping:
+#            mapping = {}
+#
+#        mapping.update(
+#                {
+#                    "object": self,
+#                    "exit": exits[0] if exits else "somewhere",
+#                    "origin": location or "nowhere",
+#                    "destination": destination or "nowhere",
+#                    }
+#                )
+#
+#        location.msg_contents(string, exclude=(self,), mapping=mapping)
+#
+#    def announce_move_to(self, source_location, msg=None, mapping=None):
+#        """
+#        Called after the move if the move was not quiet. At this point
+#        we are standing in the new location.
+#
+#        Args:
+#            source_location (Object): The place we came from
+#            msg (str, optional): the replacement message if location.
+#            mapping (dict, optional): additional mapping objects.
+#
+#        You can override this method and call its parent with a
+#        message to simply change the default message.  In the string,
+#        you can use the following as mappings (between braces):
+#            object: the object which is moving.
+#            exit: the exit from which the object is moving (if found).
+#            origin: the location of the object before the move.
+#            destination: the location of the object after moving.
+#
+#        """
+#
+#        if not source_location and self.location.has_account:
+#            # This was created from nowhere and added to an account's
+#            # inventory; it's probably the result of a create command.
+#            string = "You now have %s in your possession." % self.get_display_name(self.location)
+#            self.location.msg(string)
+#            return
+#
+#        if source_location:
+#            if msg:
+#                string = msg
 #            else:
-#                # things can be pluralized
-#                things[key].append(con)
-        # get description, build string
-        string = "|c%s|n\n" % self.get_display_name(looker)
-        desc = self.db.desc
-        # JI (12/7/9) Adding the following lines to accommodate clothing
-        worn_string_list = []
-        clothes_list = latin_clothing.get_worn_clothes(self, exclude_covered=True)
-        # Append worn, uncovered clothing to the description
-        for garment in clothes_list:
-            # if 'worn' is True, just append the name
-            if garment.db.geritur is True:
-                if garment.db.ardēns:
-                    worn_string_list.append(f"|yard{'ēns' if garment.db.sexus == 'neutrm' else 'entem'}|n {garment.db.acc_sg[0]}")
-                # JI (12/7/19) append the accusative name to the description,
-                # since these will be direct objects
-                else:
-                    worn_string_list.append(garment.db.formae['acc_sg'][0])
-            # Otherwise, append the name and the string value of 'worn'
-            elif garment.db.geritur:
-                worn_string_list.append("%s %s" % (garment.name, garment.db.geritur))
-        # get held clothes
-        possessions = self.contents
-        held_list = []
-        for possession in possessions:
-            if possession.db.tenētur:
-                if possession.db.ardēns:
-                    held_list.append(f"|y(ard{'ēns' if possession.db.sexus == 'neutrum' else 'entem'})|n {possession.db.formae['acc_sg'][0]}")
-                else:
-                    held_list.append(possession.db.formae['acc_sg'][0])
-        if desc:
-            string += "%s" % desc
-        # Append held items.
-        if held_list:
-            string += "|/|/%s tenet: %s." % (self, LatinNoun.list_to_string(held_list))
-        # Append worn clothes.
-        if worn_string_list:
-            string += "|/|/%s gerit: %s." % (self, LatinNoun.list_to_string(worn_string_list))
-        else:
-#            string += "|/|/%s nūd%s est!" % (self, 'a' if self.db.sexus == 'muliebre' else 'us' if self.db.sexus == 'māre' else 'um')
-            string += f"|/|/{self.key} nūd{us_a_um('nom_sg',self.db.sexus)} est!"
-        return string
-        # Thinking that the above, added for clothing, might need to only be in the
-        # character typeclass
+#                string = "{object} ad {ad_locum} ab {ab_loco} vēnit."
+#        else:
+#            string = "{object} ad {ad_locum} vēnit."
+#
+#        origin = source_location
+#        destination = self.location
+#        exits = []
+#        if origin:
+#            exits = [
+#                o
+#                for o in destination.contents
+#                if o.location is destination and o.destination is origin
+#            ]
+#
+#        if not mapping:
+#            mapping = {}
+#
+#        # Implementing some Latin awareness
+#        if source_location:
+#            if source_location.db.formae:
+#                ab_loco = source_location.db.formae['abl_sg'][0]
+#            else:
+#                ab_loco = source_location
+#
+#        if self.location.db.formae:
+#            ad_locum = self.location.db.formae['acc_sg'][0]
+#        else:
+#            ad_locum = self.location
+#
+#        mapping.update(
+#            {
+#                "object": self,
+#                "exit": exits[0] if exits else "somewhere",
+#                "origin": origin or "nowhere",
+#                "destination": destination or "nowhere",
+#                "ab_loco": ab_loco,
+#                "ad_locum": ad_locum,
+#            }
+#        )
+#
+#        destination.msg_contents(string, exclude=(self,), mapping=mapping)
+
+
+# Trying to move this object hook into typeclasses.rēs.Rēs
+#
+#    def return_appearance(self, looker, **kwargs):
+#        """
+#        # Lightly editing to change "You see" to "Ecce"
+#        # and 'Exits' to 'Ad hos locos ire potes:'
+#        This formats a description. It is the hook a 'look' command
+#        should call.
+#
+#        Args:
+#            looker (Object): Object doing the looking.
+#            **kwargs (dict): Arbitrary, optional arguments for users
+#                overriding the call (unused by default).
+#        """
+#
+#
+#        if not looker:
+#            return ""
+#        # get and identify all objects
+#        # JI (12/7/19) Commenting out the following which probably shouldn't apply to characters.
+##        visible = (con for con in self.contents if con != looker and con.access(looker, "view"))
+##        exits, users, things = [], [], defaultdict(list)
+##        for con in visible:
+##            key = con.get_display_name(looker)
+##            if con.destination:
+##                exits.append(key)
+##            elif con.has_account:
+##                users.append("|c%s|n" % key)
+##            else:
+##                # things can be pluralized
+##                things[key].append(con)
+#        # get description, build string
+#        string = "|c%s|n\n" % self.get_display_name(looker)
+#        desc = self.db.desc
+#        # JI (12/7/9) Adding the following lines to accommodate clothing
+#        worn_string_list = []
+#        clothes_list = latin_clothing.get_worn_clothes(self, exclude_covered=True)
+#        # Append worn, uncovered clothing to the description
+#        for garment in clothes_list:
+#            # if 'worn' is True, just append the name
+#            if garment.db.geritur is True:
+#                if garment.db.ardēns:
+#                    worn_string_list.append(f"|yard{'ēns' if garment.db.sexus == 'neutrm' else 'entem'}|n {garment.db.acc_sg[0]}")
+#                # JI (12/7/19) append the accusative name to the description,
+#                # since these will be direct objects
+#                else:
+#                    worn_string_list.append(garment.db.formae['acc_sg'][0])
+#            # Otherwise, append the name and the string value of 'worn'
+#            elif garment.db.geritur:
+#                worn_string_list.append("%s %s" % (garment.name, garment.db.geritur))
+#        # get held clothes
+#        possessions = self.contents
+#        held_list = []
+#        for possession in possessions:
+#            if possession.db.tenētur:
+#                if possession.db.ardēns:
+#                    held_list.append(f"|y(ard{'ēns' if possession.db.sexus == 'neutrum' else 'entem'})|n {possession.db.formae['acc_sg'][0]}")
+#                else:
+#                    held_list.append(possession.db.formae['acc_sg'][0])
+#        if desc:
+#            string += "%s" % desc
+#        # Append held items.
+#        if held_list:
+#            string += "|/|/%s tenet: %s." % (self, LatinNoun.list_to_string(held_list))
+#        # Append worn clothes.
+#        if worn_string_list:
+#            string += "|/|/%s gerit: %s." % (self, LatinNoun.list_to_string(worn_string_list))
+#        else:
+##            string += "|/|/%s nūd%s est!" % (self, 'a' if self.db.sexus == 'muliebre' else 'us' if self.db.sexus == 'māre' else 'um')
+#            string += f"|/|/{self.key} nūd{us_a_um('nom_sg',self.db.sexus)} est!"
+#        return string
+#        # Thinking that the above, added for clothing, might need to only be in the
+#        # character typeclass
     def at_after_move(self,source_location):
         super().at_after_move(source_location)
 
-#        origin = source_location
-#        destination = self.location
-#        Room = DefaultRoom
-#        if isinstance(origin, Room) and isinstance(destination, Room):
-#            self.callbacks.call("move", self, origin, destination)
-#            destination.callbacks.call("move", self, origin, destination)
-#
-#            # Call the 'greet' event of characters in the location
-#            for present in [
-#                o for o in destination.contents if isinstance(o, DefaultCharacter) and o is not self
-#            ]:
-#                present.callbacks.call("greet", present, self)
-#
-#        target = self.location
-#        self.msg((self.at_look(target), {"type": "look"}), options=None)
-
         if self.db.pv:
-            prompt = "\n|wVita: %i/%i) |n" % (self.db.pv['nunc'],self.db.pv['max'])
+            prompt = f"\n|wVīta:{self.db.pv['nunc']}/{self.db.pv['max']})|n"
 
             self.msg(prompt)
+
+

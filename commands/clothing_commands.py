@@ -57,9 +57,9 @@ class CmdWear(MuxCommand):
             # JI (12/7/19) changing to Latin
             self.caller.msg("Nōn in manibus habēs.")
             return
-        if not clothing.is_typeclass("typeclasses.latin_clothing.Clothing", exact=False):
+        if not clothing.is_typeclass("typeclasses.vestīmenta.Vestīmentum", exact=False):
             # JI (12/7/19) adapting to Latin
-            self.caller.msg("Ill%s non est vestis!" % ('a' if clothing.db.sexus == 'muliebre' else 'e' if clothing.db.sexus == 'māre' else 'ud'))
+            self.caller.msg("Ill%s non est vestīmentum!" % ('a' if clothing.db.sexus == 'muliebre' else 'e' if clothing.db.sexus == 'māre' else 'ud'))
             return
 
         # Enforce overall clothing limit.
@@ -191,10 +191,10 @@ class CmdCover(MuxCommand):
         cover_with = self.caller.search(self.arglist[1], candidates=self.caller.contents)
         if not to_cover or not cover_with:
             return
-        if not to_cover.is_typeclass("typeclasses.latin_clothing.Clothing", exact=False):
+        if not to_cover.is_typeclass("typeclasses.vestīmenta.Vestīmentum", exact=False):
             self.caller.msg("%s isn't clothes!" % to_cover.name)
             return
-        if not cover_with.is_typeclass("typeclasses.latin_clothing.Clothing", exact=False):
+        if not cover_with.is_typeclass("typeclasses.vestīmenta.Vestīmentum", exact=False):
             self.caller.msg("%s isn't clothes!" % cover_with.name)
             return
         if cover_with.db.genus_vestīmentōrum:
@@ -398,6 +398,7 @@ class CmdInventory(MuxCommand):
     # worn and carried items.
 
     key = "habeō"
+    aliases = ['habeo']
     locks = "cmd:all()"
     arg_regex = r"$"
     help_category = 'Iussa Latīna'

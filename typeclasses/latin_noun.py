@@ -8,6 +8,10 @@ from collections import defaultdict
 # from evennia.utils.utils import list_to_string
 
 class LatinNoun(DefaultObject):
+    """
+    This is my solution to populating all of the inflected forms of
+    Latin nouns on creation
+    """
 
     def at_first_save(self):
         """
@@ -194,6 +198,7 @@ class LatinNoun(DefaultObject):
             else:
                 # things can be pluralized
                 things[key].append(con)
+
         # get description, build string
         string = "|c%s|n\n" % self.get_display_name(looker)
         desc = self.db.desc

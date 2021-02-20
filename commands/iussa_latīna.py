@@ -247,6 +247,53 @@ class Creātur(Command):
 
         caller.msg(message)
 
+class Spectā(MuxCommand):
+    """
+    look at location or object
+
+    Usage:
+        spectā
+        spectā <rem>
+
+    Beholds your location or objects in your vicinity.
+    """
+
+    key = "spectā"
+    aliases = ["specta"]
+    help_category = 'Iussa Latīna'
+    auto_help = True
+
+    def func(self):
+        """
+        Handle the looking.
+        """
+        caller = self.caller
+
+        # checking out the room
+        if not self.args:
+            target = caller.location
+            if not target:
+                caller.msg("Nihil est quod spectāre potes!")
+                return
+
+        # Maybe too many arguments?
+        elif  len(self.arglist) != 1:
+            caller.msg("Quid spectāre velis?")
+            return
+
+        # looking at a thing
+        else:
+            stuff = caller.location.contents + caller.contents
+            target, self.args = which_one(self.args, caller, stuff)
+            if not target:
+                return
+
+            # Check the grammar
+            if check_case(caller, target, self.args, 'acc_sg') == False:
+                return
+
+        self.msg((caller.at_look(target), {"type": "look"}), options=None)
+
 class Cape(MuxCommand):
     """
     Take something.
@@ -608,6 +655,7 @@ class IussaLatīnaCmdSet(default_cmds.CharacterCmdSet):
         self.add(Cape())
         self.add(Da())
         self.add(Dīc())
+        self.add(Spectā())
 
 class IussaAdministrātōrumCmdSet(default_cmds.CharacterCmdSet):
     """

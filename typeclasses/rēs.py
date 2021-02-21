@@ -390,7 +390,12 @@ class Rēs(InflectedNoun):
             colorful_exits = sorted(colorful_exits)
             string += "\n|wAd hōs locōs potes īre:|n\n " + list_to_string(colorful_exits)
 
-            string += "\n|wEcce:|n\n " + list_to_string(users + thing_strings)
+            if len(things) > 0 and len(users) > 0:
+                string += "\n|wEcce:|n\n " + list_to_string(users + thing_strings)
+            elif len(users) > 0:
+                string += "\n|wEcce:|n\n " + list_to_string(users)
+            elif len(things) > 0:
+                string += "\n|wEcce:|n\n " + list_to_string(thing_strings)
 
         return string
 
@@ -687,6 +692,25 @@ class Rēs(InflectedNoun):
                 exclude=exclude,
                 mapping=location_mapping,
             )
+
+    def at_cmdset_get(self, **kwargs):
+        """
+        JI 2/20/21: overloading so that "None" cmdset is set to empty, maybe?
+
+        Called just before cmdsets on this object are requested by the
+        command handler. If changes need to be done on the fly to the
+        cmdset before passing them on to the cmdhandler, this is the
+        place to do it. This is called also if the object currently
+        have no cmdsets.
+
+        Keyword Args:
+            caller (Session, Object or Account): The caller requesting
+                this cmdset.
+
+        """
+        if len(self.cmdset.all()) == 0:
+            self.cmdset.add('_EMPTY_CMDSET')
+
 
 class Flammable(Rēs):
 

@@ -42,12 +42,29 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+
+class PersōnaCmdSet(default_cmds.CharacterCmdSet):
+    """
+    The `CharacterCmdSet` contains general in-game commands like `look`,
+    `get`, etc available on in-game Character objects. It is merged with
+    the `AccountCmdSet` when an Account puppets a Character.
+    """
+
+    key = "Persōna"
+
+    def at_cmdset_creation(self):
+        """
+        Populates the cmdset
+        """
+        super().at_cmdset_creation()
+        #
+        # any commands you add below will overload the default ones.
+        #
         # new commandsets
         #
         self.add(ClothedCharacterCmdSet())
         self.add(IussaLatīnaCmdSet())
         self.add(IussaAdministrātōrumCmdSet())
-
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

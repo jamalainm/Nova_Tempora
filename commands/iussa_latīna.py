@@ -663,7 +663,7 @@ class IussaLatīnaCmdSet(default_cmds.CharacterCmdSet):
     Command set for the Latin equivalents of default commands.
     """
 
-    key = "DefaultCharacter"
+    key = "Persōna"
 
     def at_cmdset_creation(self):
         """
@@ -681,7 +681,7 @@ class IussaAdministrātōrumCmdSet(default_cmds.CharacterCmdSet):
     Command set for building and creating Latin objects.
     """
 
-    key = "DefaultCharacter"
+    key = "Persōna"
 
     def at_cmdset_creation(self):
         """

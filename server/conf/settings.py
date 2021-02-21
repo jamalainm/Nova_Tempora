@@ -38,7 +38,7 @@ USE_I18N = True
 LANGUAGE_CODE= "la"
 INSTALLED_APPS += ('web.chargen',)
 MULTISESSION_MODE = 3
-BASE_OBJECT_TYPECLASS = "typeclasses.rēs.Rēs"
+# BASE_OBJECT_TYPECLASS = "typeclasses.rēs.Rēs"
 
 DEBUG = True
 

@@ -11,6 +11,7 @@ from evennia.objects.models import ObjectDB
 from django.conf import settings
 from evennia.utils import create
 from utils.latin.gens_class_praenomina import name_data
+from typeclasses.persōnae import Persōna
 
 def index(request):
     current_user = request.user # current user logged in
@@ -125,7 +126,7 @@ def creating(request):
                 praenomen_gen = praenomen + 'e'
             nōmina = praenomen + ' ' + nōmen
             # Create the actual character object
-            typeclass = settings.BASE_CHARACTER_TYPECLASS
+            typeclass = Persōna
             home = ObjectDB.objects.get_id(settings.GUEST_HOME)
             # turn the permissionhandler to a string
             perms = str(user.permissions)

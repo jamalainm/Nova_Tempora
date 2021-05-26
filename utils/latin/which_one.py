@@ -20,7 +20,7 @@ def which_one(args, caller, stuff):
 
             characteristics = [unidecode(x) for x in characteristics]
             
-            if args in characteristics:
+            if unidecode(args) in characteristics:
                 same.append(item)
 
         # if nothing was found, provide feedback
@@ -49,7 +49,7 @@ def which_one(args, caller, stuff):
 
             characteristics = [unidecode(x) for x in characteristics]
 
-            if args in characteristics:
+            if unidecode(args) in characteristics:
                 same.append(item)
 
         # if nothing is found, provide feedback

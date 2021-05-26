@@ -11,6 +11,7 @@ from utils.latin.adjective_agreement import us_a_um
 from utils.latin.which_one import which_one
 from utils.latin.check_grammar import check_case
 from utils.latin.free_hands import free_hands, put_into_hand, take_out_of_hand
+from unidecode import unidecode
 
 from evennia import default_cmds
 from evennia import CmdSet
@@ -278,8 +279,15 @@ class Spectā(MuxCommand):
 
         # Maybe too many arguments?
         elif  len(self.arglist) != 1:
-            caller.msg("Quid spectāre velis?")
-            return
+            stuff = caller.location.contents
+            exits = {unidecode(x.key):x for x in stuff if x.is_typeclass("typeclasses.exitūs.Exitus",exact=False)}
+            if unidecode(self.args) in exits:
+                target = exits[unidecode(self.args)]
+            else:
+#            target = caller.search(self.args)
+#            if not target:
+                caller.msg("Quid spectāre velis?")
+                return
 
         # looking at a thing
         else:

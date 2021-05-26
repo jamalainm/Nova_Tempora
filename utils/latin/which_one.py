@@ -1,4 +1,5 @@
 # file mygame/utils/latin/which_one.py
+from unidecode import unidecode
 
 def which_one(args, caller, stuff):
     """
@@ -16,6 +17,9 @@ def which_one(args, caller, stuff):
         for item in stuff:
             characteristics = item.aliases.all()
             [x.lower() for x in characteristics]
+
+            characteristics = [unidecode(x) for x in characteristics]
+            
             if args in characteristics:
                 same.append(item)
 
@@ -42,6 +46,8 @@ def which_one(args, caller, stuff):
             characteristics = [item.key] + item.aliases.all()
 
             [x.lower() for x in characteristics]
+
+            characteristics = [unidecode(x) for x in characteristics]
 
             if args in characteristics:
                 same.append(item)

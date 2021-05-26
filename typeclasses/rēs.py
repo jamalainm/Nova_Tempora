@@ -361,10 +361,11 @@ class Rēs(InflectedNoun):
             string += f"|/|/{self} tenet: {list_to_string(held_list)}"
 
         # Append worn items
-        if worn_string_list:
-            string += f"|/|/{self} gerit: {list_to_string(worn_string_list)}"
-        else:
-            string += f"|/|/{self} nūd{us_a_um('nom_sg',self.db.sexus)} est!"
+        if self.is_typeclass("typeclasses.persōnae.Persōna", exact=False):
+            if worn_string_list:
+                string += f"|/|/{self} gerit: {list_to_string(worn_string_list)}"
+            else:
+                string += f"|/|/{self} nūd{us_a_um('nom_sg',self.db.sexus)} est!"
 
         if users or things:
             # handle pluralization of things (never pluralize users)
